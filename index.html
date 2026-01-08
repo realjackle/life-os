@@ -144,6 +144,98 @@
     /* Progress Ring */
     .ring-container { display: flex; justify-content: center; margin-bottom: 40px; }
 
+    /* Progress + Momentum Row */
+    .progress-momentum-row {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: 24px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .ring-wrapper { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+
+    /* Momentum Card (Phase 3) */
+    .momentum-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px 24px;
+      min-width: 240px;
+      max-width: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .momentum-card.empty {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .momentum-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .momentum-delta {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .momentum-delta.positive { color: var(--green); }
+    .momentum-delta.negative { color: var(--red); }
+    .momentum-delta.neutral { color: var(--gray); }
+    .momentum-delta-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+    .momentum-sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 40px;
+      margin: 16px 0;
+    }
+    .sparkline-bar {
+      flex: 1;
+      background: var(--blue);
+      border-radius: 2px;
+      min-width: 8px;
+      transition: height 0.5s ease-out;
+      opacity: 0.4;
+    }
+    .sparkline-bar.current { opacity: 1; }
+    .sparkline-bar:hover { opacity: 1; }
+    .momentum-velocity {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .velocity-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .velocity-trend {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .velocity-trend.positive { background: rgba(52,199,89,0.15); color: var(--green); }
+    .velocity-trend.negative { background: rgba(255,69,58,0.15); color: var(--red); }
+    .velocity-trend.neutral { background: rgba(142,142,147,0.15); color: var(--gray); }
+
     /* Weekly Focus (Phase 2) */
     .weekly-focus {
       background: linear-gradient(135deg, rgba(10,132,255,0.1), rgba(94,92,230,0.1));
@@ -577,7 +669,7 @@
         <div class="header-label">Life Operating System</div>
         <h1 class="header-title">Control Center</h1>
         <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.1.0</div>
+        <div class="header-version">v1.2.0</div>
       </div>
 
       <!-- WEEKLY FOCUS (Phase 2) -->
@@ -586,7 +678,7 @@
         <div class="weekly-focus-systems" id="focusSystems"></div>
       </div>
 
-      <div class="ring-container">
+      <div class="progress-momentum-row">
         <div class="ring-wrapper">
           <svg class="ring" width="160" height="160">
             <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
@@ -595,6 +687,13 @@
           <div class="ring-text">
             <div class="ring-value" id="overallProgress">0%</div>
             <div class="ring-label">Complete</div>
+          </div>
+        </div>
+
+        <!-- Momentum Card (Phase 3) -->
+        <div class="momentum-card" id="momentumCard">
+          <div class="momentum-card empty">
+            Complete a Weekly Review<br>to unlock Momentum tracking
           </div>
         </div>
       </div>
@@ -783,6 +882,9 @@
       const circumference = 2 * Math.PI * 70;
       document.getElementById('ringFill').style.strokeDashoffset = circumference - (avgProgress / 100) * circumference;
 
+      // Render Momentum (Phase 3)
+      renderMomentum(avgProgress);
+
       // Render Weekly Focus (Phase 2)
       renderWeeklyFocus();
 
@@ -915,6 +1017,120 @@
       setTimeout(() => {
         document.querySelector(`.system[data-id="${systemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
+    }
+
+    // Momentum (Phase 3)
+    function renderMomentum(currentProgress) {
+      const card = document.getElementById('momentumCard');
+      
+      // Get progress history from localStorage
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('lifeOsProgressHistory') || '[]');
+      } catch (e) {}
+
+      // Save today's progress (max once per day)
+      const today = new Date().toISOString().split('T')[0];
+      const lastEntry = history[history.length - 1];
+      if (!lastEntry || lastEntry.date !== today) {
+        history.push({ date: today, progress: currentProgress });
+        // Keep last 8 weeks (56 days max)
+        if (history.length > 56) history = history.slice(-56);
+        localStorage.setItem('lifeOsProgressHistory', JSON.stringify(history));
+      } else {
+        // Update today's entry
+        lastEntry.progress = currentProgress;
+        localStorage.setItem('lifeOsProgressHistory', JSON.stringify(history));
+      }
+
+      // Get weekly snapshots (last 8 weeks)
+      const weeklyData = getWeeklySnapshots(history);
+
+      if (weeklyData.length < 2) {
+        card.innerHTML = `
+          <div class="momentum-card empty">
+            Complete a Weekly Review<br>to unlock Momentum tracking
+          </div>
+        `;
+        return;
+      }
+
+      // Calculate delta vs last week
+      const current = weeklyData[weeklyData.length - 1];
+      const previous = weeklyData[weeklyData.length - 2];
+      const delta = current - previous;
+      const deltaClass = delta > 1 ? 'positive' : delta < -1 ? 'negative' : 'neutral';
+      const deltaSign = delta > 0 ? '+' : '';
+      const deltaArrow = delta > 1 ? '↑' : delta < -1 ? '↓' : '→';
+
+      // Calculate velocity (avg change per week over last 4 weeks)
+      let velocity = 0;
+      let velocityTrend = 'neutral';
+      if (weeklyData.length >= 3) {
+        const recentChanges = [];
+        for (let i = 1; i < weeklyData.length; i++) {
+          recentChanges.push(weeklyData[i] - weeklyData[i-1]);
+        }
+        velocity = recentChanges.reduce((a, b) => a + b, 0) / recentChanges.length;
+        
+        // Compare recent velocity to older velocity
+        if (recentChanges.length >= 4) {
+          const recentAvg = (recentChanges.slice(-2).reduce((a, b) => a + b, 0)) / 2;
+          const olderAvg = (recentChanges.slice(0, 2).reduce((a, b) => a + b, 0)) / 2;
+          if (recentAvg > olderAvg + 0.5) velocityTrend = 'positive';
+          else if (recentAvg < olderAvg - 0.5) velocityTrend = 'negative';
+        }
+      }
+
+      // Build sparkline
+      const maxProgress = Math.max(...weeklyData, 1);
+      const sparklineBars = weeklyData.map((val, idx) => {
+        const height = Math.max((val / 100) * 40, 4);
+        const isCurrent = idx === weeklyData.length - 1;
+        return `<div class="sparkline-bar ${isCurrent ? 'current' : ''}" style="height: ${height}px" title="Week ${idx + 1}: ${val}%"></div>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="momentum-label">Momentum</div>
+        <div class="momentum-delta ${deltaClass}">
+          ${deltaSign}${delta}% ${deltaArrow}
+          <span class="momentum-delta-sub">vs. last week</span>
+        </div>
+        <div class="momentum-sparkline">
+          ${sparklineBars}
+        </div>
+        <div class="momentum-velocity">
+          <span class="velocity-value">${velocity >= 0 ? '+' : ''}${velocity.toFixed(1)}%/week</span>
+          <span class="velocity-trend ${velocityTrend}">${velocityTrend === 'positive' ? '↑ Accelerating' : velocityTrend === 'negative' ? '↓ Slowing' : '→ Steady'}</span>
+        </div>
+      `;
+    }
+
+    function getWeeklySnapshots(history) {
+      if (history.length === 0) return [];
+      
+      const weeks = [];
+      const now = new Date();
+      
+      // Get data for each of the last 8 weeks
+      for (let w = 7; w >= 0; w--) {
+        const weekEnd = new Date(now);
+        weekEnd.setDate(weekEnd.getDate() - (w * 7));
+        const weekStart = new Date(weekEnd);
+        weekStart.setDate(weekStart.getDate() - 7);
+        
+        // Find the latest entry in this week
+        const weekEntries = history.filter(h => {
+          const d = new Date(h.date);
+          return d >= weekStart && d <= weekEnd;
+        });
+        
+        if (weekEntries.length > 0) {
+          weeks.push(weekEntries[weekEntries.length - 1].progress);
+        }
+      }
+      
+      return weeks;
     }
 
     function renderFilters() {
