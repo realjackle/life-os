@@ -116,7 +116,50 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Header */
-    .header { text-align: center; margin-bottom: 40px; position: relative; }
+    .header { text-align: center; margin-bottom: 32px; position: relative; }
+
+    /* North Star (Phase 4) */
+    .north-star {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 16px;
+    }
+    .north-star:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    .north-star-label {
+      font-size: 10px;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .north-star-text {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .north-star-text.empty {
+      color: var(--dim);
+      font-style: normal;
+    }
+    .north-star-edit {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .north-star:hover .north-star-edit {
+      opacity: 1;
+    }
     .header-label {
       font-size: 11px; color: var(--muted);
       text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;
@@ -669,7 +712,14 @@
         <div class="header-label">Life Operating System</div>
         <h1 class="header-title">Control Center</h1>
         <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.2.0</div>
+        <div class="header-version">v1.3.0</div>
+      </div>
+
+      <!-- North Star (Phase 4) -->
+      <div class="north-star" id="northStar" onclick="editNorthStar()">
+        <div class="north-star-label">★ North Star</div>
+        <div class="north-star-text" id="northStarText"></div>
+        <div class="north-star-edit">Click to edit</div>
       </div>
 
       <!-- WEEKLY FOCUS (Phase 2) -->
@@ -1548,6 +1598,34 @@
 
     // Start
     init();
+
+    // North Star (Phase 4)
+    function renderNorthStar() {
+      const saved = localStorage.getItem('lifeOsNorthStar') || '';
+      const textEl = document.getElementById('northStarText');
+      
+      if (saved) {
+        textEl.textContent = '"' + saved + '"';
+        textEl.classList.remove('empty');
+      } else {
+        textEl.textContent = 'Define your North Star...';
+        textEl.classList.add('empty');
+      }
+    }
+
+    function editNorthStar() {
+      const current = localStorage.getItem('lifeOsNorthStar') || '';
+      const newValue = prompt('Your North Star – Why are you doing all this?', current);
+      
+      if (newValue !== null) {
+        localStorage.setItem('lifeOsNorthStar', newValue.trim());
+        renderNorthStar();
+        toast('North Star saved');
+      }
+    }
+
+    // Render North Star on load
+    renderNorthStar();
   </script>
 </body>
 </html>
