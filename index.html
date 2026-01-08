@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Life OS</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Life OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Life Operating System – Control Center">
+  
+  <!-- PWA Icons (Base64 embedded for single-file simplicity) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>">
+  
+  <!-- Manifest (inline via data URI) -->
+  <link rel="manifest" href="data:application/json,{%22name%22:%22Life%20OS%22,%22short_name%22:%22Life%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23000000%22,%22theme_color%22:%22%23000000%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000;
+      --card: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.06);
+      --text: #fff;
+      --muted: rgba(255,255,255,0.4);
+      --dim: rgba(255,255,255,0.2);
+      --blue: #0A84FF;
+      --green: #32D74B;
+      --orange: #FF9F0A;
+      --red: #FF453A;
+      --gray: #8E8E93;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: calc(40px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+
+    /* Standalone mode (PWA) adjustments */
+    @media (display-mode: standalone) {
+      body { padding-top: calc(60px + var(--safe-top)); }
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* Setup Modal */
+    .modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal.hidden { display: none; }
+    .modal-content {
+      background: #1c1c1e;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 100%;
+    }
+    .modal-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .modal-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    .modal-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .modal-input:focus { outline: none; border-color: var(--blue); }
+    .modal-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--blue);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-btn:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; }
+    .modal-hint { font-size: 12px; color: var(--dim); margin-top: 20px; line-height: 1.6; }
+    .modal-hint strong { color: var(--muted); }
+
+    /* Loading */
+    .loading { text-align: center; padding: 80px 20px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 40px; position: relative; }
+    .header-label {
+      font-size: 11px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;
+    }
+    .header-title {
+      font-size: 34px; font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-meta { font-size: 13px; color: var(--dim); margin-top: 8px; }
+    .header-version { font-size: 11px; color: var(--dim); margin-top: 4px; font-family: monospace; }
+    .header-actions { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
+    .header-btn {
+      background: linear-gradient(135deg, var(--blue), #5E5CE6);
+      border: none; border-radius: 10px;
+      padding: 10px 16px;
+      color: var(--text); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .header-btn:hover { transform: scale(1.05); }
+    .header-btn.secondary {
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* Progress Ring */
+    .ring-container { display: flex; justify-content: center; margin-bottom: 40px; }
+
+    /* Weekly Focus (Phase 2) */
+    .weekly-focus {
+      background: linear-gradient(135deg, rgba(10,132,255,0.1), rgba(94,92,230,0.1));
+      border: 1px solid rgba(10,132,255,0.2);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .weekly-focus-label {
+      font-size: 11px;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .weekly-focus-systems {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .focus-system-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .focus-system-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .focus-system-progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .focus-system-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s;
+    }
+    .focus-system-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Attention Queue (Phase 2) */
+    .attention-queue {
+      background: rgba(255,69,58,0.05);
+      border: 1px solid rgba(255,69,58,0.15);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .attention-queue.hidden { display: none; }
+    .attention-queue-label {
+      font-size: 11px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .attention-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .attention-item:last-child { border-bottom: none; }
+    .attention-rank {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--red);
+      min-width: 24px;
+    }
+    .attention-info { flex: 1; }
+    .attention-name { font-size: 14px; font-weight: 500; }
+    .attention-reason { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .attention-action {
+      font-size: 12px;
+      color: var(--blue);
+      cursor: pointer;
+    }
+    .ring-wrapper { position: relative; width: 160px; height: 160px; }
+    .ring { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 10; }
+    .ring-fill {
+      fill: none; stroke: var(--blue); stroke-width: 10;
+      stroke-linecap: round; transition: stroke-dashoffset 0.8s ease-out;
+    }
+    .ring-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); text-align: center;
+    }
+    .ring-value { font-size: 44px; font-weight: 600; }
+    .ring-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+    .stat {
+      background: var(--card); border-radius: 16px;
+      padding: 20px; border: 1px solid var(--border);
+    }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 600; }
+    .stat-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+    /* Filters */
+    .filters { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 8px 16px; border-radius: 20px; border: none;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+      font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover { background: rgba(255,255,255,0.12); }
+    .filter-btn.active { background: #fff; color: #000; }
+
+    /* Edit Hint */
+    .edit-hint {
+      background: rgba(10, 132, 255, 0.1);
+      border-radius: 12px; padding: 12px 16px;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+      font-size: 13px; color: var(--muted);
+    }
+    .edit-hint span:first-child { color: var(--blue); }
+    .edit-hint strong { color: var(--text); }
+
+    /* System Cards */
+    .systems { display: flex; flex-direction: column; gap: 12px; }
+    .system {
+      background: var(--card); border-radius: 16px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .system-header {
+      padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer;
+    }
+    .system-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .system-info { flex: 1; }
+    .system-title { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .system-name { font-size: 15px; font-weight: 600; }
+    .system-meta { display: flex; align-items: center; gap: 16px; }
+    .system-count { font-size: 12px; color: var(--muted); }
+    .progress-bar { flex: 1; max-width: 120px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+    .system-progress { font-size: 12px; font-weight: 600; min-width: 35px; text-align: right; }
+    .system-chevron { color: var(--dim); transition: transform 0.3s; padding: 8px; }
+    .system.expanded .system-chevron { transform: rotate(180deg); }
+
+    /* Status Badge */
+    .badge {
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .badge:hover { filter: brightness(1.2); }
+    .badge-running { background: rgba(52,199,89,0.15); color: var(--green); }
+    .badge-rework { background: rgba(255,159,10,0.15); color: var(--orange); }
+    .badge-struggle { background: rgba(255,69,58,0.15); color: var(--red); }
+    .badge-backlog { background: rgba(142,142,147,0.15); color: var(--gray); }
+
+    /* Features List */
+    .features { padding: 0 20px 20px; border-top: 1px solid var(--border); display: none; }
+    .system.expanded .features { display: block; }
+    .feature {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); gap: 12px;
+    }
+    .feature:last-of-type { border-bottom: none; }
+    .feature-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .feature-dot {
+      width: 10px; height: 10px; border-radius: 50%; cursor: pointer; transition: all 0.2s;
+    }
+    .feature-dot.active { background: var(--green); }
+    .feature-dot.planned { background: rgba(255,255,255,0.2); }
+    .feature-dot:hover { transform: scale(1.3); }
+    .feature-name { font-size: 14px; flex: 1; }
+    .feature-name.planned { color: var(--muted); }
+    .feature-name-input {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 8px; color: var(--text);
+      font-size: 14px; width: 100%;
+    }
+    .feature-right { display: flex; align-items: center; gap: 12px; }
+    .feature-level { font-size: 11px; color: var(--dim); min-width: 28px; }
+    .level-dots { display: flex; gap: 4px; }
+    .level-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.2s;
+    }
+    .level-dot.filled { background: var(--blue); }
+    .level-dot:hover { transform: scale(1.3); }
+    .feature-delete {
+      background: none; border: none; color: var(--dim);
+      cursor: pointer; font-size: 18px; padding: 0 4px; transition: color 0.2s;
+    }
+    .feature-delete:hover { color: var(--red); }
+
+    /* Add Feature */
+    .add-feature {
+      display: flex; gap: 8px; margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .add-feature input {
+      flex: 1; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; color: var(--text); font-size: 13px;
+    }
+    .add-feature input:focus { outline: none; border-color: var(--blue); }
+    .add-feature button {
+      background: var(--blue); border: none; border-radius: 8px;
+      padding: 10px 16px; color: var(--text);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .add-feature button:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; }
+
+    /* Delete System */
+    .delete-system {
+      margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end;
+    }
+    .delete-system button {
+      background: none; border: 1px solid rgba(255,69,58,0.3);
+      border-radius: 8px; padding: 8px 14px;
+      color: rgba(255,69,58,0.6); font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .delete-system button:hover {
+      border-color: var(--red); color: var(--red); background: rgba(255,69,58,0.1);
+    }
+
+    /* Add System Button */
+    .add-system-btn {
+      background: var(--card); border: 2px dashed var(--border);
+      border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      color: var(--muted); font-size: 14px; font-weight: 500; width: 100%;
+    }
+    .add-system-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(10,132,255,0.05); }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-text { font-size: 11px; color: var(--dim); }
+    .footer-btn {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 12px; color: var(--dim); font-size: 11px; cursor: pointer; transition: all 0.2s;
+    }
+    .footer-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(50,50,50,0.95); color: var(--text);
+      padding: 12px 24px; border-radius: 12px;
+      font-size: 13px; font-weight: 500;
+      opacity: 0; transition: all 0.3s; pointer-events: none;
+      backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Add System Modal */
+    .modal-grid { display: grid; gap: 16px; margin-bottom: 20px; }
+    .modal-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: block; }
+    .modal-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .modal-option {
+      padding: 12px 16px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text); cursor: pointer; transition: all 0.2s;
+      text-align: left; font-size: 13px; display: flex; align-items: center; gap: 8px;
+    }
+    .modal-option:hover { border-color: var(--muted); }
+    .modal-option.selected { border-color: var(--blue); background: rgba(10,132,255,0.1); }
+    .modal-status-options { display: flex; gap: 8px; }
+    .modal-status-btn {
+      flex: 1; padding: 10px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 500;
+      text-transform: capitalize; transition: all 0.2s;
+    }
+    .modal-status-btn.selected { border-width: 2px; }
+    .modal-status-btn.selected.running { border-color: var(--green); color: var(--green); }
+    .modal-status-btn.selected.rework { border-color: var(--orange); color: var(--orange); }
+    .modal-status-btn.selected.struggle { border-color: var(--red); color: var(--red); }
+    .modal-status-btn.selected.backlog { border-color: var(--gray); color: var(--gray); }
+    .modal-footer { display: flex; gap: 12px; }
+    .modal-footer .modal-btn { flex: 1; }
+    .modal-footer .modal-btn.secondary { background: rgba(255,255,255,0.1); }
+
+    /* Weekly Review Modal */
+    .review-progress { display: flex; gap: 8px; margin-bottom: 24px; }
+    .review-step { flex: 1; height: 3px; border-radius: 2px; background: var(--border); }
+    .review-step.active { background: var(--blue); }
+    .review-textarea {
+      width: 100%; height: 80px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; color: var(--text); font-size: 14px; resize: none;
+    }
+    .review-textarea:focus { outline: none; border-color: var(--blue); }
+    .review-scale { display: flex; gap: 8px; margin: 16px 0; }
+    .review-scale-btn {
+      flex: 1; padding: 16px 0; border-radius: 12px; border: none;
+      background: rgba(255,255,255,0.05); font-size: 20px; cursor: pointer; transition: all 0.2s;
+    }
+    .review-scale-btn.selected { background: var(--blue); }
+    .review-scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); }
+    .review-systems { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; max-height: 300px; overflow-y: auto; }
+    .review-system-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text); cursor: pointer; text-align: left; font-size: 14px;
+    }
+    .review-system-btn.selected { border: 2px solid var(--blue); background: rgba(10,132,255,0.1); }
+    .review-summary { display: flex; flex-direction: column; gap: 16px; }
+    .review-summary-card { background: var(--card); border-radius: 12px; padding: 16px; }
+    .review-summary-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .review-summary-value { font-size: 16px; }
+    .review-summary-row { display: flex; gap: 16px; }
+    .review-summary-row > div { flex: 1; text-align: center; }
+    .review-focus-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .review-focus-tag { background: rgba(10,132,255,0.2); color: var(--blue); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
+    .review-priority-box {
+      background: linear-gradient(135deg, rgba(10,132,255,0.2), rgba(94,92,230,0.2));
+      border-radius: 12px; padding: 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat-value { font-size: 24px; }
+      .header-title { font-size: 28px; }
+      .header-actions { position: static; justify-content: center; margin-top: 16px; }
+      .modal-options { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Setup Modal -->
+    <div class="modal" id="setupModal">
+      <div class="modal-content">
+        <div class="modal-title">Life OS verbinden</div>
+        <div class="modal-subtitle">Füge deine Apps Script URL ein</div>
+        <input type="text" class="modal-input" id="apiUrl" placeholder="https://script.google.com/macros/s/...">
+        <button class="modal-btn" id="connectBtn" onclick="connect()">Verbinden</button>
+        <div class="modal-hint">
+          <strong>Setup-Anleitung:</strong><br>
+          1. Öffne dein Google Sheet<br>
+          2. Extensions → Apps Script<br>
+          3. Füge den Code ein → Speichern<br>
+          4. Deploy → New deployment → Web app<br>
+          5. Execute as: Me | Access: Anyone<br>
+          6. Kopiere die URL hierher
+        </div>
+      </div>
+    </div>
+
+    <!-- Add System Modal -->
+    <div class="modal hidden" id="addSystemModal">
+      <div class="modal-content">
+        <div class="modal-title">Neues System</div>
+        <div class="modal-subtitle">Erweitere dein Life OS</div>
+        <div class="modal-grid">
+          <div>
+            <label class="modal-label">Name</label>
+            <input type="text" class="modal-input" id="newSystemName" placeholder="z.B. Side Project, Meditation...">
+          </div>
+          <div>
+            <label class="modal-label">Kategorie</label>
+            <div class="modal-options" id="categoryOptions"></div>
+          </div>
+          <div>
+            <label class="modal-label">Status</label>
+            <div class="modal-status-options" id="statusOptions"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn secondary" onclick="closeAddSystemModal()">Abbrechen</button>
+          <button class="modal-btn" onclick="createSystem()">Erstellen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Review Modal -->
+    <div class="modal hidden" id="reviewModal">
+      <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+          <div>
+            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Weekly Review</div>
+            <div class="modal-title" id="reviewStepTitle">Rückblick</div>
+            <div class="modal-subtitle" id="reviewStepSubtitle">Was ist diese Woche passiert?</div>
+          </div>
+          <button onclick="closeReviewModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 32px; height: 32px; color: var(--muted); cursor: pointer; font-size: 18px;">×</button>
+        </div>
+        <div class="review-progress" id="reviewProgress"></div>
+        <div id="reviewContent"></div>
+        <div class="modal-footer" style="margin-top: 24px;">
+          <button class="modal-btn secondary" id="reviewBackBtn" onclick="reviewBack()" style="display: none;">Zurück</button>
+          <button class="modal-btn" id="reviewNextBtn" onclick="reviewNext()">Weiter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading" style="display: none;">
+      <div class="spinner"></div>
+      <div>Lade Daten...</div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" style="display: none;">
+      <div class="header">
+        <div class="header-actions">
+          <button class="header-btn" onclick="openReviewModal()">📋 Weekly Review</button>
+        </div>
+        <div class="header-label">Life Operating System</div>
+        <h1 class="header-title">Control Center</h1>
+        <div class="header-meta" id="lastUpdated"></div>
+        <div class="header-version">v1.1.0</div>
+      </div>
+
+      <!-- WEEKLY FOCUS (Phase 2) -->
+      <div class="weekly-focus" id="weeklyFocus" style="display: none;">
+        <div class="weekly-focus-label">THIS WEEK'S FOCUS</div>
+        <div class="weekly-focus-systems" id="focusSystems"></div>
+      </div>
+
+      <div class="ring-container">
+        <div class="ring-wrapper">
+          <svg class="ring" width="160" height="160">
+            <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
+            <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="70" stroke-dasharray="439.82" stroke-dashoffset="439.82"></circle>
+          </svg>
+          <div class="ring-text">
+            <div class="ring-value" id="overallProgress">0%</div>
+            <div class="ring-label">Complete</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Systems</div>
+          <div class="stat-value" id="statSystems">0</div>
+          <div class="stat-sub" id="statRunning">0 running</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Features</div>
+          <div class="stat-value" id="statFeatures">0</div>
+          <div class="stat-sub" id="statActive">0 active</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Need Work</div>
+          <div class="stat-value" id="statNeedWork" style="color: var(--orange)">0</div>
+          <div class="stat-sub">Systems</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Backlog</div>
+          <div class="stat-value" id="statBacklog" style="color: var(--gray)">0</div>
+          <div class="stat-sub">Systems</div>
+        </div>
+      </div>
+
+      <div class="filters" id="filters"></div>
+
+      <!-- ATTENTION QUEUE (Phase 2) -->
+      <div class="attention-queue hidden" id="attentionQueue">
+        <div class="attention-queue-label">⚠️ ATTENTION NEEDED</div>
+        <div id="attentionItems"></div>
+      </div>
+
+      <div class="edit-hint">
+        <span>⚡</span>
+        <span><strong>Edit Mode aktiv:</strong> Klick auf Status-Badge · Klick auf Level-Dots · Doppelklick auf Namen</span>
+      </div>
+
+      <div class="systems" id="systemsList"></div>
+
+      <div class="footer">
+        <div class="footer-text">Life OS · Built for Focus</div>
+        <div style="display: flex; gap: 8px;">
+          <button class="footer-btn" onclick="loadData()">↻ Refresh</button>
+          <button class="footer-btn" onclick="resetConnection()">⚙ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ============================================
+    // STATE
+    // ============================================
+    let API_URL = localStorage.getItem('lifeOsApiUrl') || '';
+    let data = { systems: [], features: [], config: {} };
+    let selectedCategory = 'all';
+    let expandedSystems = new Set();
+    let newSystemCategory = '';
+    let newSystemStatus = 'Backlog';
+    let reviewStep = 0;
+    let reviewData = { wins: '', struggles: '', energy: 3, clarity: 3, focusSystems: [], priority: '' };
+
+    const categoryIcons = {
+      'Health & Vitality': '♥',
+      'Finance & Wealth': '◆',
+      'Productivity': '⚡',
+      'Assets & Admin': '□',
+      'Growth & Learning': '↑'
+    };
+
+    const statusColors = {
+      'Running': { bg: 'rgba(52,199,89,0.15)', color: '#32D74B' },
+      'Rework': { bg: 'rgba(255,159,10,0.15)', color: '#FF9F0A' },
+      'Struggle': { bg: 'rgba(255,69,58,0.15)', color: '#FF453A' },
+      'Backlog': { bg: 'rgba(142,142,147,0.15)', color: '#8E8E93' }
+    };
+
+    const statusOrder = ['Running', 'Rework', 'Struggle', 'Backlog'];
+
+    // ============================================
+    // INIT
+    // ============================================
+    function init() {
+      if (API_URL) {
+        document.getElementById('setupModal').classList.add('hidden');
+        loadData();
+      }
+    }
+
+    function connect() {
+      const url = document.getElementById('apiUrl').value.trim();
+      if (url.includes('script.google.com')) {
+        API_URL = url;
+        localStorage.setItem('lifeOsApiUrl', API_URL);
+        document.getElementById('setupModal').classList.add('hidden');
+        loadData();
+      } else {
+        alert('Bitte eine gültige Apps Script URL eingeben.');
+      }
+    }
+
+    function resetConnection() {
+      if (confirm('Verbindung zurücksetzen?')) {
+        localStorage.removeItem('lifeOsApiUrl');
+        location.reload();
+      }
+    }
+
+    // ============================================
+    // API CALLS
+    // ============================================
+    async function loadData() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+
+      try {
+        const response = await fetch(API_URL);
+        const result = await response.json();
+        if (result.success) {
+          data = result.data;
+          render();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast('Fehler beim Laden: ' + error.message);
+        document.getElementById('setupModal').classList.remove('hidden');
+      }
+
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    async function apiPost(payload) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+          toast('Gespeichert ✓');
+          loadData();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error(error);
+        toast('Fehler: ' + error.message);
+      }
+    }
+
+    // ============================================
+    // RENDER
+    // ============================================
+    function render() {
+      document.getElementById('dashboard').style.display = 'block';
+
+      // Calculate stats
+      const systems = data.systems;
+      const features = data.features;
+      const running = systems.filter(s => s.Status === 'Running').length;
+      const active = features.filter(f => f.Status === 'Active').length;
+      const needWork = systems.filter(s => s.Status === 'Struggle' || s.Status === 'Rework').length;
+      const backlog = systems.filter(s => s.Status === 'Backlog').length;
+      const avgProgress = features.length > 0 
+        ? Math.round(features.reduce((sum, f) => sum + (f.Level / 5), 0) / features.length * 100)
+        : 0;
+
+      // Update stats
+      document.getElementById('statSystems').textContent = systems.length;
+      document.getElementById('statRunning').textContent = running + ' running';
+      document.getElementById('statFeatures').textContent = features.length;
+      document.getElementById('statActive').textContent = active + ' active';
+      document.getElementById('statNeedWork').textContent = needWork;
+      document.getElementById('statBacklog').textContent = backlog;
+      document.getElementById('overallProgress').textContent = avgProgress + '%';
+      document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString('de-DE');
+
+      // Progress ring
+      const circumference = 2 * Math.PI * 70;
+      document.getElementById('ringFill').style.strokeDashoffset = circumference - (avgProgress / 100) * circumference;
+
+      // Render Weekly Focus (Phase 2)
+      renderWeeklyFocus();
+
+      // Render Attention Queue (Phase 2)
+      renderAttentionQueue();
+
+      // Filters
+      renderFilters();
+
+      // Systems
+      renderSystems();
+    }
+
+    // Weekly Focus (Phase 2)
+    function renderWeeklyFocus() {
+      const focusSystemIds = [];
+      
+      // Get focus systems from localStorage (saved from weekly review)
+      const savedFocus = localStorage.getItem('lifeOsWeeklyFocus');
+      if (savedFocus) {
+        try {
+          const parsed = JSON.parse(savedFocus);
+          // Check if it's from this week (within 7 days)
+          const savedDate = new Date(parsed.date);
+          const now = new Date();
+          const daysDiff = (now - savedDate) / (1000 * 60 * 60 * 24);
+          if (daysDiff <= 7) {
+            focusSystemIds.push(...parsed.systems);
+          }
+        } catch (e) {}
+      }
+
+      if (focusSystemIds.length === 0) {
+        document.getElementById('weeklyFocus').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('weeklyFocus').style.display = 'block';
+      
+      const focusHtml = focusSystemIds.map(sysId => {
+        const system = data.systems.find(s => s.ID === sysId);
+        if (!system) return '';
+        
+        const sysFeatures = data.features.filter(f => f.SystemID === sysId);
+        const progress = sysFeatures.length > 0
+          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
+          : 0;
+        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
+        const statusStyle = statusColors[system.Status] || statusColors['Backlog'];
+
+        return `
+          <div class="focus-system-card">
+            <div class="focus-system-name">${system.Name}</div>
+            <div class="focus-system-progress">
+              <div class="focus-system-progress-fill" style="width: ${progress}%; background: ${statusStyle.color}"></div>
+            </div>
+            <div class="focus-system-meta">
+              <span>${activeCount}/${sysFeatures.length} active</span>
+              <span style="color: ${statusStyle.color}">${progress}%</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('focusSystems').innerHTML = focusHtml;
+    }
+
+    // Attention Queue (Phase 2)
+    function renderAttentionQueue() {
+      const attentionSystems = [];
+
+      data.systems.forEach(system => {
+        const sysFeatures = data.features.filter(f => f.SystemID === system.ID);
+        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
+        const progress = sysFeatures.length > 0
+          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
+          : 0;
+
+        let reason = null;
+        let priority = 99;
+
+        if (system.Status === 'Struggle') {
+          reason = 'Status: Struggle';
+          priority = 1;
+        } else if (system.Status === 'Rework') {
+          reason = 'Status: Rework';
+          priority = 2;
+        } else if (activeCount === 0 && sysFeatures.length > 0) {
+          reason = 'Keine aktiven Features';
+          priority = 3;
+        } else if (progress < 20 && system.Status !== 'Backlog') {
+          reason = 'Fortschritt unter 20%';
+          priority = 4;
+        }
+
+        if (reason) {
+          attentionSystems.push({ system, reason, priority, progress });
+        }
+      });
+
+      // Sort by priority
+      attentionSystems.sort((a, b) => a.priority - b.priority);
+
+      const container = document.getElementById('attentionQueue');
+      
+      if (attentionSystems.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      
+      const html = attentionSystems.slice(0, 5).map((item, idx) => `
+        <div class="attention-item">
+          <div class="attention-rank">#${idx + 1}</div>
+          <div class="attention-info">
+            <div class="attention-name">${item.system.Name}</div>
+            <div class="attention-reason">${item.reason} · ${item.progress}% complete</div>
+          </div>
+          <div class="attention-action" onclick="expandAndScroll('${item.system.ID}')">→ View</div>
+        </div>
+      `).join('');
+
+      document.getElementById('attentionItems').innerHTML = html;
+    }
+
+    function expandAndScroll(systemId) {
+      expandedSystems.add(systemId);
+      renderSystems();
+      setTimeout(() => {
+        document.querySelector(`.system[data-id="${systemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+
+    function renderFilters() {
+      const categories = ['all', ...new Set(data.systems.map(s => s.Category))];
+      document.getElementById('filters').innerHTML = categories.map(cat => `
+        <button class="filter-btn ${selectedCategory === cat ? 'active' : ''}" onclick="setFilter('${cat}')">
+          ${cat === 'all' ? 'All Systems' : (categoryIcons[cat] || '') + ' ' + cat}
+        </button>
+      `).join('');
+    }
+
+    function setFilter(cat) {
+      selectedCategory = cat;
+      renderFilters();
+      renderSystems();
+    }
+
+    function renderSystems() {
+      let systems = data.systems;
+      if (selectedCategory !== 'all') {
+        systems = systems.filter(s => s.Category === selectedCategory);
+      }
+      systems.sort((a, b) => (a.Priority || 99) - (b.Priority || 99));
+
+      const html = systems.map(system => {
+        const sysFeatures = data.features.filter(f => f.SystemID === system.ID);
+        const progress = sysFeatures.length > 0
+          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
+          : 0;
+        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
+        const statusStyle = statusColors[system.Status] || statusColors['Backlog'];
+        const icon = categoryIcons[system.Category] || '○';
+        const isExpanded = expandedSystems.has(system.ID);
+
+        return `
+          <div class="system ${isExpanded ? 'expanded' : ''}" data-id="${system.ID}">
+            <div class="system-header" onclick="toggleSystem('${system.ID}')">
+              <div class="system-icon" style="background: linear-gradient(135deg, ${statusStyle.color}22, ${statusStyle.color}44)">${icon}</div>
+              <div class="system-info">
+                <div class="system-title">
+                  <span class="system-name" ondblclick="editSystemName(event, '${system.ID}', '${system.Name}')">${system.Name}</span>
+                  <span class="badge badge-${system.Status.toLowerCase()}" onclick="cycleSystemStatus(event, '${system.ID}', '${system.Status}')">${system.Status}</span>
+                </div>
+                <div class="system-meta">
+                  <span class="system-count">${activeCount}/${sysFeatures.length} Features</span>
+                  <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${statusStyle.color}"></div></div>
+                  <span class="system-progress" style="color: ${statusStyle.color}">${progress}%</span>
+                </div>
+              </div>
+              <div class="system-chevron">▼</div>
+            </div>
+            <div class="features">
+              <div style="padding-top: 16px;">
+                ${sysFeatures.map(f => renderFeature(f)).join('')}
+              </div>
+              <div class="add-feature">
+                <input type="text" placeholder="New feature name..." id="newFeature_${system.ID}" onkeydown="if(event.key==='Enter')addFeature('${system.ID}')">
+                <button onclick="addFeature('${system.ID}')">+ Add</button>
+              </div>
+              <div class="delete-system">
+                <button onclick="deleteSystem('${system.ID}', '${system.Name}')">System löschen</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('systemsList').innerHTML = html + `
+        <button class="add-system-btn" onclick="openAddSystemModal()">
+          <span style="font-size: 20px">+</span> Neues System hinzufügen
+        </button>
+      `;
+    }
+
+    function renderFeature(f) {
+      const isActive = f.Status === 'Active';
+      return `
+        <div class="feature" data-id="${f.ID}">
+          <div class="feature-left">
+            <div class="feature-dot ${isActive ? 'active' : 'planned'}" onclick="toggleFeatureStatus('${f.ID}', '${f.Status}')" title="${isActive ? 'Active' : 'Planned'}"></div>
+            <span class="feature-name ${isActive ? '' : 'planned'}" ondblclick="editFeatureName(event, '${f.ID}', '${f.Name}')">${f.Name}</span>
+          </div>
+          <div class="feature-right">
+            <span class="feature-level">LV ${f.Level}</span>
+            <div class="level-dots">
+              ${[0,1,2,3,4].map(i => `<div class="level-dot ${i < f.Level ? 'filled' : ''}" onclick="setFeatureLevel('${f.ID}', ${i + 1 === f.Level ? i : i + 1})"></div>`).join('')}
+            </div>
+            <button class="feature-delete" onclick="deleteFeature('${f.ID}')">×</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // ACTIONS
+    // ============================================
+    function toggleSystem(id) {
+      if (expandedSystems.has(id)) {
+        expandedSystems.delete(id);
+      } else {
+        expandedSystems.add(id);
+      }
+      renderSystems();
+    }
+
+    function cycleSystemStatus(e, id, currentStatus) {
+      e.stopPropagation();
+      const idx = statusOrder.indexOf(currentStatus);
+      const newStatus = statusOrder[(idx + 1) % statusOrder.length];
+      apiPost({ action: 'updateSystemStatus', systemId: id, status: newStatus });
+    }
+
+    function editSystemName(e, id, currentName) {
+      e.stopPropagation();
+      const newName = prompt('System umbenennen:', currentName);
+      if (newName && newName !== currentName) {
+        apiPost({ action: 'updateSystemName', systemId: id, name: newName });
+      }
+    }
+
+    function toggleFeatureStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'Active' ? 'Planned' : 'Active';
+      apiPost({ action: 'updateFeatureStatus', featureId: id, status: newStatus });
+    }
+
+    function setFeatureLevel(id, level) {
+      apiPost({ action: 'updateFeatureLevel', featureId: id, level: level });
+    }
+
+    function editFeatureName(e, id, currentName) {
+      e.stopPropagation();
+      const newName = prompt('Feature umbenennen:', currentName);
+      if (newName && newName !== currentName) {
+        apiPost({ action: 'updateFeatureName', featureId: id, name: newName });
+      }
+    }
+
+    function addFeature(systemId) {
+      const input = document.getElementById('newFeature_' + systemId);
+      const name = input.value.trim();
+      if (name) {
+        apiPost({ action: 'addFeature', systemId: systemId, name: name });
+        input.value = '';
+      }
+    }
+
+    function deleteFeature(id) {
+      if (confirm('Feature löschen?')) {
+        apiPost({ action: 'deleteFeature', featureId: id });
+      }
+    }
+
+    function deleteSystem(id, name) {
+      if (confirm(`"${name}" und alle Features löschen?`)) {
+        apiPost({ action: 'deleteSystem', systemId: id });
+      }
+    }
+
+    // ============================================
+    // ADD SYSTEM MODAL
+    // ============================================
+    function openAddSystemModal() {
+      const categories = data.config.categories || [];
+      newSystemCategory = categories[0] || '';
+      newSystemStatus = 'Backlog';
+
+      document.getElementById('categoryOptions').innerHTML = categories.map(cat => `
+        <button class="modal-option ${newSystemCategory === cat ? 'selected' : ''}" onclick="selectCategory('${cat}')">
+          ${categoryIcons[cat] || ''} ${cat}
+        </button>
+      `).join('');
+
+      document.getElementById('statusOptions').innerHTML = statusOrder.map(s => `
+        <button class="modal-status-btn ${s.toLowerCase()} ${newSystemStatus === s ? 'selected' : ''}" onclick="selectStatus('${s}')">${s}</button>
+      `).join('');
+
+      document.getElementById('newSystemName').value = '';
+      document.getElementById('addSystemModal').classList.remove('hidden');
+    }
+
+    function closeAddSystemModal() {
+      document.getElementById('addSystemModal').classList.add('hidden');
+    }
+
+    function selectCategory(cat) {
+      newSystemCategory = cat;
+      document.querySelectorAll('#categoryOptions .modal-option').forEach(btn => {
+        btn.classList.toggle('selected', btn.textContent.includes(cat));
+      });
+    }
+
+    function selectStatus(status) {
+      newSystemStatus = status;
+      document.querySelectorAll('#statusOptions .modal-status-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.textContent === status);
+      });
+    }
+
+    function createSystem() {
+      const name = document.getElementById('newSystemName').value.trim();
+      if (name && newSystemCategory) {
+        apiPost({ action: 'addSystem', name: name, category: newSystemCategory, status: newSystemStatus });
+        closeAddSystemModal();
+      }
+    }
+
+    // ============================================
+    // WEEKLY REVIEW MODAL
+    // ============================================
+    const reviewSteps = [
+      { title: 'Rückblick', subtitle: 'Was ist diese Woche passiert?' },
+      { title: 'Energie-Check', subtitle: 'Wie geht es dir?' },
+      { title: 'Fokus', subtitle: 'Was ist nächste Woche wichtig?' },
+      { title: 'Zusammenfassung', subtitle: 'Dein Weekly Review' }
+    ];
+
+    function openReviewModal() {
+      reviewStep = 0;
+      reviewData = { wins: '', struggles: '', energy: 3, clarity: 3, focusSystems: [], priority: '' };
+      renderReviewStep();
+      document.getElementById('reviewModal').classList.remove('hidden');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.add('hidden');
+    }
+
+    function renderReviewStep() {
+      const step = reviewSteps[reviewStep];
+      document.getElementById('reviewStepTitle').textContent = step.title;
+      document.getElementById('reviewStepSubtitle').textContent = step.subtitle;
+
+      // Progress
+      document.getElementById('reviewProgress').innerHTML = reviewSteps.map((_, i) => 
+        `<div class="review-step ${i <= reviewStep ? 'active' : ''}"></div>`
+      ).join('');
+
+      // Buttons
+      document.getElementById('reviewBackBtn').style.display = reviewStep > 0 ? 'block' : 'none';
+      document.getElementById('reviewNextBtn').textContent = reviewStep < 3 ? 'Weiter' : 'Abschließen';
+
+      // Content
+      const content = document.getElementById('reviewContent');
+      if (reviewStep === 0) {
+        const struggling = data.systems.filter(s => s.Status === 'Struggle' || s.Status === 'Rework');
+        content.innerHTML = `
+          <div style="margin-bottom: 20px;">
+            <label class="modal-label">🏆 Was lief gut?</label>
+            <textarea class="review-textarea" id="reviewWins" placeholder="z.B. 4x Gym, Budget eingehalten...">${reviewData.wins}</textarea>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label class="modal-label">⚠️ Was war schwierig?</label>
+            <textarea class="review-textarea" id="reviewStruggles" placeholder="z.B. Task Management chaotisch...">${reviewData.struggles}</textarea>
+          </div>
+          ${struggling.length > 0 ? `
+            <div style="background: rgba(255,159,10,0.1); border-radius: 12px; padding: 16px;">
+              <div style="font-size: 13px; color: var(--orange); margin-bottom: 8px;">⚡ ${struggling.length} System${struggling.length > 1 ? 'e' : ''} brauchen Aufmerksamkeit:</div>
+              <div style="color: var(--muted); font-size: 14px;">${struggling.map(s => s.Name).join(', ')}</div>
+            </div>
+          ` : ''}
+        `;
+      } else if (reviewStep === 1) {
+        content.innerHTML = `
+          <div style="margin-bottom: 32px;">
+            <label class="modal-label">Energie-Level diese Woche</label>
+            <div class="review-scale">
+              ${[1,2,3,4,5].map(n => `<button class="review-scale-btn ${reviewData.energy === n ? 'selected' : ''}" onclick="setReviewEnergy(${n})">${['😴','😕','😐','😊','🔥'][n-1]}</button>`).join('')}
+            </div>
+            <div class="review-scale-labels"><span>Ausgebrannt</span><span>Volle Power</span></div>
+          </div>
+          <div>
+            <label class="modal-label">Klarheit über Prioritäten</label>
+            <div class="review-scale">
+              ${[1,2,3,4,5].map(n => `<button class="review-scale-btn ${reviewData.clarity === n ? 'selected' : ''}" onclick="setReviewClarity(${n})">${['🌫️','☁️','⛅','🌤️','☀️'][n-1]}</button>`).join('')}
+            </div>
+            <div class="review-scale-labels"><span>Völlig unklar</span><span>Kristallklar</span></div>
+          </div>
+        `;
+      } else if (reviewStep === 2) {
+        content.innerHTML = `
+          <div style="margin-bottom: 20px;">
+            <label class="modal-label">Wähle max. 3 Fokus-Systeme:</label>
+            <div class="review-systems">
+              ${data.systems.map(s => {
+                const selected = reviewData.focusSystems.includes(s.ID);
+                const statusStyle = statusColors[s.Status] || statusColors['Backlog'];
+                return `<button class="review-system-btn ${selected ? 'selected' : ''}" onclick="toggleFocusSystem('${s.ID}')">
+                  <div style="width:8px;height:8px;border-radius:50%;background:${statusStyle.color}"></div>
+                  ${s.Name}
+                  ${selected ? '<span style="margin-left:auto;color:var(--blue)">✓</span>' : ''}
+                </button>`;
+              }).join('')}
+            </div>
+          </div>
+          <div>
+            <label class="modal-label">#1 Priorität nächste Woche:</label>
+            <input type="text" class="modal-input" id="reviewPriority" value="${reviewData.priority}" placeholder="z.B. Budget System aufsetzen">
+          </div>
+        `;
+      } else {
+        const avgProgress = data.features.length > 0 
+          ? Math.round(data.features.reduce((sum, f) => sum + (f.Level / 5), 0) / data.features.length * 100)
+          : 0;
+        content.innerHTML = `
+          <div class="review-summary">
+            <div class="review-summary-card">
+              <div class="review-summary-label">Gesamtfortschritt</div>
+              <div class="review-summary-value" style="font-size: 32px; font-weight: 600;">${avgProgress}%</div>
+            </div>
+            ${reviewData.wins ? `<div><div class="review-summary-label">🏆 Wins</div><div class="review-summary-value">${reviewData.wins}</div></div>` : ''}
+            ${reviewData.struggles ? `<div><div class="review-summary-label">⚠️ Struggles</div><div class="review-summary-value">${reviewData.struggles}</div></div>` : ''}
+            <div class="review-summary-row">
+              <div class="review-summary-card">
+                <div style="font-size: 24px; margin-bottom: 4px;">${['😴','😕','😐','😊','🔥'][reviewData.energy-1]}</div>
+                <div class="review-summary-label">Energie</div>
+              </div>
+              <div class="review-summary-card">
+                <div style="font-size: 24px; margin-bottom: 4px;">${['🌫️','☁️','⛅','🌤️','☀️'][reviewData.clarity-1]}</div>
+                <div class="review-summary-label">Klarheit</div>
+              </div>
+            </div>
+            ${reviewData.focusSystems.length > 0 ? `
+              <div>
+                <div class="review-summary-label">🎯 Fokus nächste Woche</div>
+                <div class="review-focus-tags">${reviewData.focusSystems.map(id => {
+                  const sys = data.systems.find(s => s.ID === id);
+                  return sys ? `<span class="review-focus-tag">${sys.Name}</span>` : '';
+                }).join('')}</div>
+              </div>
+            ` : ''}
+            ${reviewData.priority ? `
+              <div class="review-priority-box">
+                <div class="review-summary-label">#1 Priorität</div>
+                <div style="font-size: 16px; font-weight: 500;">${reviewData.priority}</div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+
+    function setReviewEnergy(n) { reviewData.energy = n; renderReviewStep(); }
+    function setReviewClarity(n) { reviewData.clarity = n; renderReviewStep(); }
+    function toggleFocusSystem(id) {
+      if (reviewData.focusSystems.includes(id)) {
+        reviewData.focusSystems = reviewData.focusSystems.filter(i => i !== id);
+      } else if (reviewData.focusSystems.length < 3) {
+        reviewData.focusSystems.push(id);
+      }
+      renderReviewStep();
+    }
+
+    function reviewBack() {
+      saveReviewStepData();
+      reviewStep--;
+      renderReviewStep();
+    }
+
+    function reviewNext() {
+      saveReviewStepData();
+      if (reviewStep < 3) {
+        reviewStep++;
+        renderReviewStep();
+      } else {
+        // Save review
+        const avgProgress = data.features.length > 0 
+          ? Math.round(data.features.reduce((sum, f) => sum + (f.Level / 5), 0) / data.features.length * 100)
+          : 0;
+        
+        // Save focus systems to localStorage for Weekly Focus display
+        if (reviewData.focusSystems.length > 0) {
+          localStorage.setItem('lifeOsWeeklyFocus', JSON.stringify({
+            date: new Date().toISOString(),
+            systems: reviewData.focusSystems
+          }));
+        }
+
+        apiPost({
+          action: 'saveWeeklyReview',
+          review: {
+            date: new Date().toISOString().split('T')[0],
+            overallProgress: avgProgress,
+            energy: reviewData.energy,
+            clarity: reviewData.clarity,
+            focusSystem1: reviewData.focusSystems[0] || '',
+            focusSystem2: reviewData.focusSystems[1] || '',
+            focusSystem3: reviewData.focusSystems[2] || '',
+            priority: reviewData.priority,
+            wins: reviewData.wins,
+            struggles: reviewData.struggles
+          }
+        });
+        closeReviewModal();
+      }
+    }
+
+    function saveReviewStepData() {
+      if (reviewStep === 0) {
+        reviewData.wins = document.getElementById('reviewWins')?.value || '';
+        reviewData.struggles = document.getElementById('reviewStruggles')?.value || '';
+      } else if (reviewStep === 2) {
+        reviewData.priority = document.getElementById('reviewPriority')?.value || '';
+      }
+    }
+
+    // ============================================
+    // UTILS
+    // ============================================
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('visible');
+      setTimeout(() => t.classList.remove('visible'), 2000);
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
