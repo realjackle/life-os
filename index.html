@@ -121,7 +121,7 @@
     /* North Star (Phase 4) */
     .north-star {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       padding: 20px;
       cursor: pointer;
       transition: all 0.2s;
@@ -159,6 +159,86 @@
     }
     .north-star:hover .north-star-edit {
       opacity: 1;
+    }
+
+    /* Quarterly Goals (Phase 5) */
+    .quarterly-goals {
+      background: linear-gradient(135deg, rgba(94,92,230,0.1), rgba(175,82,222,0.1));
+      border: 1px solid rgba(94,92,230,0.2);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .quarterly-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .quarterly-label {
+      font-size: 11px;
+      color: #AF52DE;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .quarterly-period {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .quarterly-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .quarterly-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quarterly-item:hover {
+      background: rgba(0,0,0,0.5);
+    }
+    .quarterly-number {
+      font-size: 14px;
+      font-weight: 700;
+      color: #AF52DE;
+      min-width: 24px;
+    }
+    .quarterly-text {
+      flex: 1;
+      font-size: 14px;
+    }
+    .quarterly-text.empty {
+      color: var(--dim);
+    }
+    .quarterly-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: 1px dashed rgba(175,82,222,0.3);
+      border-radius: 12px;
+      color: var(--dim);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quarterly-add:hover {
+      border-color: #AF52DE;
+      color: #AF52DE;
+    }
+    .quarterly-empty {
+      text-align: center;
+      color: var(--dim);
+      font-size: 13px;
+      padding: 20px;
     }
     .header-label {
       font-size: 11px; color: var(--muted);
@@ -712,7 +792,7 @@
         <div class="header-label">Life Operating System</div>
         <h1 class="header-title">Control Center</h1>
         <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.3.0</div>
+        <div class="header-version">v1.4.0</div>
       </div>
 
       <!-- North Star (Phase 4) -->
@@ -720,6 +800,15 @@
         <div class="north-star-label">★ North Star</div>
         <div class="north-star-text" id="northStarText"></div>
         <div class="north-star-edit">Click to edit</div>
+      </div>
+
+      <!-- Quarterly Goals (Phase 5) -->
+      <div class="quarterly-goals" id="quarterlyGoals">
+        <div class="quarterly-header">
+          <div class="quarterly-label">◆ Quarterly Goals</div>
+          <div class="quarterly-period" id="quarterlyPeriod"></div>
+        </div>
+        <div class="quarterly-list" id="quarterlyList"></div>
       </div>
 
       <!-- WEEKLY FOCUS (Phase 2) -->
@@ -1626,6 +1715,108 @@
 
     // Render North Star on load
     renderNorthStar();
+
+    // Quarterly Goals (Phase 5)
+    function renderQuarterlyGoals() {
+      const now = new Date();
+      const quarter = Math.floor(now.getMonth() / 3) + 1;
+      const year = now.getFullYear();
+      const quarterKey = `${year}-Q${quarter}`;
+      
+      document.getElementById('quarterlyPeriod').textContent = `Q${quarter} ${year}`;
+      
+      let goals = [];
+      try {
+        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
+        // Filter to current quarter
+        goals = goals.filter(g => g.quarter === quarterKey);
+      } catch (e) {}
+
+      const listEl = document.getElementById('quarterlyList');
+      
+      if (goals.length === 0) {
+        listEl.innerHTML = `
+          <div class="quarterly-empty">No goals set for Q${quarter}</div>
+          <div class="quarterly-add" onclick="addQuarterlyGoal()">+ Add Goal</div>
+        `;
+        return;
+      }
+
+      let html = goals.map((goal, idx) => `
+        <div class="quarterly-item" onclick="editQuarterlyGoal(${idx})">
+          <div class="quarterly-number">${idx + 1}</div>
+          <div class="quarterly-text">${goal.text}</div>
+        </div>
+      `).join('');
+
+      if (goals.length < 3) {
+        html += `<div class="quarterly-add" onclick="addQuarterlyGoal()">+ Add Goal</div>`;
+      }
+
+      listEl.innerHTML = html;
+    }
+
+    function addQuarterlyGoal() {
+      const now = new Date();
+      const quarter = Math.floor(now.getMonth() / 3) + 1;
+      const year = now.getFullYear();
+      const quarterKey = `${year}-Q${quarter}`;
+
+      const text = prompt('New Quarterly Goal:');
+      if (!text || !text.trim()) return;
+
+      let goals = [];
+      try {
+        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
+      } catch (e) {}
+
+      const currentGoals = goals.filter(g => g.quarter === quarterKey);
+      if (currentGoals.length >= 3) {
+        alert('Maximum 3 goals per quarter');
+        return;
+      }
+
+      goals.push({ quarter: quarterKey, text: text.trim() });
+      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
+      renderQuarterlyGoals();
+      toast('Goal added');
+    }
+
+    function editQuarterlyGoal(idx) {
+      const now = new Date();
+      const quarter = Math.floor(now.getMonth() / 3) + 1;
+      const year = now.getFullYear();
+      const quarterKey = `${year}-Q${quarter}`;
+
+      let goals = [];
+      try {
+        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
+      } catch (e) {}
+
+      const currentGoals = goals.filter(g => g.quarter === quarterKey);
+      const goal = currentGoals[idx];
+      if (!goal) return;
+
+      const action = prompt(`Edit or delete goal:\n\n"${goal.text}"\n\nEnter new text, or type DELETE to remove:`, goal.text);
+      
+      if (action === null) return;
+      
+      if (action.toUpperCase() === 'DELETE') {
+        const globalIdx = goals.findIndex(g => g.quarter === quarterKey && g.text === goal.text);
+        if (globalIdx > -1) goals.splice(globalIdx, 1);
+        toast('Goal deleted');
+      } else if (action.trim()) {
+        const globalIdx = goals.findIndex(g => g.quarter === quarterKey && g.text === goal.text);
+        if (globalIdx > -1) goals[globalIdx].text = action.trim();
+        toast('Goal updated');
+      }
+
+      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
+      renderQuarterlyGoals();
+    }
+
+    // Render Quarterly Goals on load
+    renderQuarterlyGoals();
   </script>
 </body>
 </html>
