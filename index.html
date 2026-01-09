@@ -57,7 +57,94 @@
       body { padding-top: calc(60px + var(--safe-top)); }
     }
 
-    .container { max-width: 900px; margin: 0 auto; }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    /* 2-Column Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 340px 1fr;
+        gap: 32px;
+      }
+      .sidebar {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+      }
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Search */
+    .search-bar {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px 12px 40px;
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: rgba(255,255,255,0.05);
+    }
+    .search-input::placeholder { color: var(--dim); }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--dim);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .search-shortcut {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--dim);
+      font-family: monospace;
+    }
+
+    /* Compact North Star for sidebar */
+    @media (min-width: 1024px) {
+      .north-star {
+        padding: 16px;
+        margin-bottom: 0;
+      }
+      .north-star-text {
+        font-size: 15px;
+      }
+    }
 
     /* Setup Modal */
     .modal {
@@ -165,39 +252,39 @@
     .quarterly-goals {
       background: linear-gradient(135deg, rgba(94,92,230,0.1), rgba(175,82,222,0.1));
       border: 1px solid rgba(94,92,230,0.2);
-      border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 32px;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 0;
     }
     .quarterly-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .quarterly-label {
-      font-size: 11px;
+      font-size: 10px;
       color: #AF52DE;
       text-transform: uppercase;
       letter-spacing: 2px;
       font-weight: 600;
     }
     .quarterly-period {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
     }
     .quarterly-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
     .quarterly-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 10px;
+      padding: 10px 12px;
       background: rgba(0,0,0,0.3);
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -205,14 +292,14 @@
       background: rgba(0,0,0,0.5);
     }
     .quarterly-number {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       color: #AF52DE;
-      min-width: 24px;
+      min-width: 20px;
     }
     .quarterly-text {
       flex: 1;
-      font-size: 14px;
+      font-size: 13px;
     }
     .quarterly-text.empty {
       color: var(--dim);
@@ -221,12 +308,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 12px;
+      gap: 6px;
+      padding: 10px;
       border: 1px dashed rgba(175,82,222,0.3);
-      border-radius: 12px;
+      border-radius: 10px;
       color: var(--dim);
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -237,8 +324,8 @@
     .quarterly-empty {
       text-align: center;
       color: var(--dim);
-      font-size: 13px;
-      padding: 20px;
+      font-size: 12px;
+      padding: 12px;
     }
     .header-label {
       font-size: 11px; color: var(--muted);
@@ -251,15 +338,17 @@
     }
     .header-meta { font-size: 13px; color: var(--dim); margin-top: 8px; }
     .header-version { font-size: 11px; color: var(--dim); margin-top: 4px; font-family: monospace; }
-    .header-actions { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; margin-top: 8px; }
     .header-btn {
+      flex: 1;
       background: linear-gradient(135deg, var(--blue), #5E5CE6);
       border: none; border-radius: 10px;
-      padding: 10px 16px;
+      padding: 12px 16px;
       color: var(--text); font-size: 13px; font-weight: 600;
       cursor: pointer; transition: transform 0.2s;
+      text-align: center;
     }
-    .header-btn:hover { transform: scale(1.05); }
+    .header-btn:hover { transform: scale(1.02); }
     .header-btn.secondary {
       background: rgba(255,255,255,0.1);
     }
@@ -272,87 +361,104 @@
       display: flex;
       justify-content: center;
       align-items: stretch;
-      gap: 24px;
-      margin-bottom: 40px;
+      gap: 16px;
+      margin-bottom: 0;
       flex-wrap: wrap;
     }
 
-    .ring-wrapper { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+    @media (min-width: 1024px) {
+      .progress-momentum-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .ring-wrapper {
+        margin: 0 auto;
+      }
+    }
+
+    .ring-wrapper { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
 
     /* Momentum Card (Phase 3) */
     .momentum-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px 24px;
-      min-width: 240px;
-      max-width: 300px;
+      border-radius: 16px;
+      padding: 16px;
+      min-width: 200px;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
+
+    @media (min-width: 1024px) {
+      .momentum-card {
+        min-width: auto;
+      }
+    }
+
     .momentum-card.empty {
       justify-content: center;
       align-items: center;
       text-align: center;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
     }
     .momentum-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       font-weight: 600;
     }
     .momentum-delta {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 6px;
     }
     .momentum-delta.positive { color: var(--green); }
     .momentum-delta.negative { color: var(--red); }
     .momentum-delta.neutral { color: var(--gray); }
     .momentum-delta-sub {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 400;
       color: var(--muted);
     }
     .momentum-sparkline {
       display: flex;
       align-items: flex-end;
-      gap: 4px;
-      height: 40px;
-      margin: 16px 0;
+      gap: 3px;
+      height: 32px;
+      margin: 12px 0;
     }
     .sparkline-bar {
       flex: 1;
       background: var(--blue);
       border-radius: 2px;
-      min-width: 8px;
+      min-width: 6px;
       transition: height 0.5s ease-out;
       opacity: 0.4;
     }
     .sparkline-bar.current { opacity: 1; }
     .sparkline-bar:hover { opacity: 1; }
     .momentum-velocity {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .velocity-value {
       color: var(--text);
       font-weight: 600;
     }
     .velocity-trend {
-      font-size: 12px;
-      padding: 2px 8px;
+      font-size: 11px;
+      padding: 2px 6px;
       border-radius: 4px;
     }
     .velocity-trend.positive { background: rgba(52,199,89,0.15); color: var(--green); }
@@ -363,48 +469,48 @@
     .weekly-focus {
       background: linear-gradient(135deg, rgba(10,132,255,0.1), rgba(94,92,230,0.1));
       border: 1px solid rgba(10,132,255,0.2);
-      border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 32px;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 0;
     }
     .weekly-focus-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--blue);
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       font-weight: 600;
     }
     .weekly-focus-systems {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-    }
-    .focus-system-card {
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
+    .focus-system-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
     .focus-system-name {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 600;
     }
     .focus-system-progress {
-      height: 6px;
+      height: 4px;
       background: rgba(255,255,255,0.1);
-      border-radius: 3px;
+      border-radius: 2px;
       overflow: hidden;
     }
     .focus-system-progress-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 2px;
       transition: width 0.5s;
     }
     .focus-system-meta {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       display: flex;
       justify-content: space-between;
@@ -454,27 +560,31 @@
     }
     .ring-wrapper { position: relative; width: 160px; height: 160px; }
     .ring { transform: rotate(-90deg); }
-    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 10; }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
     .ring-fill {
-      fill: none; stroke: var(--blue); stroke-width: 10;
+      fill: none; stroke: var(--blue); stroke-width: 8;
       stroke-linecap: round; transition: stroke-dashoffset 0.8s ease-out;
     }
     .ring-text {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%); text-align: center;
     }
-    .ring-value { font-size: 44px; font-weight: 600; }
-    .ring-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ring-value { font-size: 36px; font-weight: 600; }
+    .ring-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Stats */
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 32px; }
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 0; }
     .stat {
-      background: var(--card); border-radius: 12px;
-      padding: 16px; border: 1px solid var(--border);
+      background: var(--card); border-radius: 10px;
+      padding: 12px; border: 1px solid var(--border);
     }
-    .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .stat-value { font-size: 28px; font-weight: 600; }
-    .stat-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+    .stat-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 600; }
+    .stat-sub { font-size: 10px; color: var(--dim); margin-top: 2px; }
+
+    @media (max-width: 1023px) {
+      .stats { grid-template-columns: repeat(4, 1fr); }
+    }
 
     /* Filters */
     .filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -786,13 +896,10 @@
     <!-- Dashboard -->
     <div id="dashboard" style="display: none;">
       <div class="header">
-        <div class="header-actions">
-          <button class="header-btn" onclick="openReviewModal()">📋 Weekly Review</button>
-        </div>
         <div class="header-label">Life Operating System</div>
         <h1 class="header-title">Control Center</h1>
         <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.4.1</div>
+        <div class="header-version">v1.5.0</div>
       </div>
 
       <!-- North Star (Phase 4) -->
@@ -802,78 +909,98 @@
         <div class="north-star-edit">Click to edit</div>
       </div>
 
-      <!-- Quarterly Goals (Phase 5) -->
-      <div class="quarterly-goals" id="quarterlyGoals">
-        <div class="quarterly-header">
-          <div class="quarterly-label">◆ Quarterly Goals</div>
-          <div class="quarterly-period" id="quarterlyPeriod"></div>
-        </div>
-        <div class="quarterly-list" id="quarterlyList"></div>
-      </div>
+      <div class="dashboard-grid">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+          <!-- Quarterly Goals (Phase 5) -->
+          <div class="quarterly-goals" id="quarterlyGoals">
+            <div class="quarterly-header">
+              <div class="quarterly-label">◆ Quarterly Goals</div>
+              <div class="quarterly-period" id="quarterlyPeriod"></div>
+            </div>
+            <div class="quarterly-list" id="quarterlyList"></div>
+          </div>
 
-      <!-- WEEKLY FOCUS (Phase 2) -->
-      <div class="weekly-focus" id="weeklyFocus" style="display: none;">
-        <div class="weekly-focus-label">THIS WEEK'S FOCUS</div>
-        <div class="weekly-focus-systems" id="focusSystems"></div>
-      </div>
+          <!-- WEEKLY FOCUS (Phase 2) -->
+          <div class="weekly-focus" id="weeklyFocus" style="display: none;">
+            <div class="weekly-focus-label">⚡ This Week's Focus</div>
+            <div class="weekly-focus-systems" id="focusSystems"></div>
+          </div>
 
-      <div class="progress-momentum-row">
-        <div class="ring-wrapper">
-          <svg class="ring" width="160" height="160">
-            <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
-            <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="70" stroke-dasharray="439.82" stroke-dashoffset="439.82"></circle>
-          </svg>
-          <div class="ring-text">
-            <div class="ring-value" id="overallProgress">0%</div>
-            <div class="ring-label">Complete</div>
+          <div class="progress-momentum-row">
+            <div class="ring-wrapper">
+              <svg class="ring" width="140" height="140">
+                <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
+                <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="60" stroke-dasharray="377" stroke-dashoffset="377"></circle>
+              </svg>
+              <div class="ring-text">
+                <div class="ring-value" id="overallProgress">0%</div>
+                <div class="ring-label">Complete</div>
+              </div>
+            </div>
+
+            <!-- Momentum Card (Phase 3) -->
+            <div class="momentum-card" id="momentumCard">
+              <div class="momentum-card empty">
+                Complete a Weekly Review<br>to unlock Momentum tracking
+              </div>
+            </div>
+          </div>
+
+          <!-- ATTENTION QUEUE (Phase 2) -->
+          <div class="attention-queue hidden" id="attentionQueue">
+            <div class="attention-queue-label">⚠️ ATTENTION NEEDED</div>
+            <div id="attentionItems"></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Systems</div>
+              <div class="stat-value" id="statSystems">0</div>
+              <div class="stat-sub" id="statRunning">0 running</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Features</div>
+              <div class="stat-value" id="statFeatures">0</div>
+              <div class="stat-sub" id="statActive">0 active</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Need Work</div>
+              <div class="stat-value" id="statNeedWork" style="color: var(--orange)">0</div>
+              <div class="stat-sub">Systems</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Backlog</div>
+              <div class="stat-value" id="statBacklog" style="color: var(--gray)">0</div>
+              <div class="stat-sub">Systems</div>
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button class="header-btn" onclick="openReviewModal()">📋 Weekly Review</button>
           </div>
         </div>
 
-        <!-- Momentum Card (Phase 3) -->
-        <div class="momentum-card" id="momentumCard">
-          <div class="momentum-card empty">
-            Complete a Weekly Review<br>to unlock Momentum tracking
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+          <!-- Search -->
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search systems or features..." onkeyup="handleSearch(event)">
+            <span class="search-shortcut">/</span>
           </div>
+
+          <div class="filters" id="filters"></div>
+
+          <div class="edit-hint">
+            <span>⚡</span>
+            <span><strong>Edit:</strong> Click badge = status · Click dots = level · Double-click = rename</span>
+          </div>
+
+          <div class="systems" id="systemsList"></div>
         </div>
       </div>
-
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-label">Systems</div>
-          <div class="stat-value" id="statSystems">0</div>
-          <div class="stat-sub" id="statRunning">0 running</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Features</div>
-          <div class="stat-value" id="statFeatures">0</div>
-          <div class="stat-sub" id="statActive">0 active</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Need Work</div>
-          <div class="stat-value" id="statNeedWork" style="color: var(--orange)">0</div>
-          <div class="stat-sub">Systems</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Backlog</div>
-          <div class="stat-value" id="statBacklog" style="color: var(--gray)">0</div>
-          <div class="stat-sub">Systems</div>
-        </div>
-      </div>
-
-      <div class="filters" id="filters"></div>
-
-      <!-- ATTENTION QUEUE (Phase 2) -->
-      <div class="attention-queue hidden" id="attentionQueue">
-        <div class="attention-queue-label">⚠️ ATTENTION NEEDED</div>
-        <div id="attentionItems"></div>
-      </div>
-
-      <div class="edit-hint">
-        <span>⚡</span>
-        <span><strong>Edit Mode aktiv:</strong> Klick auf Status-Badge · Klick auf Level-Dots · Doppelklick auf Namen</span>
-      </div>
-
-      <div class="systems" id="systemsList"></div>
 
       <div class="footer">
         <div class="footer-text">Life OS · Built for Focus</div>
@@ -1017,8 +1144,8 @@
       document.getElementById('overallProgress').textContent = avgProgress + '%';
       document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString('de-DE');
 
-      // Progress ring
-      const circumference = 2 * Math.PI * 70;
+      // Progress ring (r=60, circumference = 2*PI*60 = 377)
+      const circumference = 2 * Math.PI * 60;
       document.getElementById('ringFill').style.strokeDashoffset = circumference - (avgProgress / 100) * circumference;
 
       // Render Momentum (Phase 3)
@@ -1292,6 +1419,18 @@
       if (selectedCategory !== 'all') {
         systems = systems.filter(s => s.Category === selectedCategory);
       }
+      
+      // Search filter
+      if (searchQuery) {
+        systems = systems.filter(s => {
+          const nameMatch = s.Name.toLowerCase().includes(searchQuery);
+          const featureMatch = data.features.some(f => 
+            f.SystemID === s.ID && f.Name.toLowerCase().includes(searchQuery)
+          );
+          return nameMatch || featureMatch;
+        });
+      }
+      
       systems.sort((a, b) => (a.Priority || 99) - (b.Priority || 99));
 
       const html = systems.map(system => {
@@ -1687,6 +1826,39 @@
 
     // Start
     init();
+
+    // Search functionality
+    let searchQuery = '';
+
+    function handleSearch(event) {
+      searchQuery = event.target.value.toLowerCase().trim();
+      renderSystems();
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Don't trigger if typing in input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (e.key === 'Escape') {
+          e.target.blur();
+          searchQuery = '';
+          document.getElementById('searchInput').value = '';
+          renderSystems();
+        }
+        return;
+      }
+
+      if (e.key === '/') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      } else if (e.key === 'r' || e.key === 'R') {
+        loadData();
+      } else if (e.key === 'n' || e.key === 'N') {
+        openAddSystemModal();
+      } else if (e.key === 'w' || e.key === 'W') {
+        openReviewModal();
+      }
+    });
 
     // North Star (Phase 4)
     function renderNorthStar() {
