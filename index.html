@@ -1583,20 +1583,32 @@
     async function loadData() {
       try {
         const res = await fetch(API_URL);
-        data = await res.json();
+        const response = await res.json();
+        
+        if (response.success && response.data) {
+          data = response.data;
+        } else if (response.systems) {
+          data = response;
+        } else {
+          throw new Error(response.error || 'Invalid response format');
+        }
+        
         render();
       } catch (e) {
-        toast('Load failed: ' + e.message);
+        console.error('Load error:', e);
+        toast('Load failed: ' + e.message, true);
       }
     }
 
     async function apiPost(payload) {
       try {
+        console.log('POST:', payload);
         const res = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
         const result = await res.json();
+        console.log('POST result:', result);
         if (result.success) {
           toast('Saved ✓');
           loadData();
@@ -1604,17 +1616,20 @@
           throw new Error(result.error);
         }
       } catch (e) {
-        toast('Error: ' + e.message);
+        console.error('POST error:', e);
+        toast('Error: ' + e.message, true);
       }
     }
 
     // Silent API - no reload, for optimistic updates
     async function apiSilent(payload) {
+      console.log('Silent POST:', payload);
       const res = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify(payload)
       });
       const result = await res.json();
+      console.log('Silent result:', result);
       if (!result.success) throw new Error(result.error);
       return result;
     }
@@ -1632,15 +1647,16 @@
     }
 
     function renderStats() {
-      const systems = data.systems;
-      const features = data.features;
+      const systems = data.systems || [];
+      const features = data.features || [];
       document.getElementById('statSystems').textContent = systems.length;
       document.getElementById('statFeatures').textContent = features.length;
       document.getElementById('statActive').textContent = features.filter(f => f.Status === 'Active').length;
     }
 
     function renderFilters() {
-      const categories = ['all', ...new Set(data.systems.map(s => s.Category))];
+      const systems = data.systems || [];
+      const categories = ['all', ...new Set(systems.map(s => s.Category).filter(Boolean))];
       document.getElementById('filters').innerHTML = categories.map(c => `
         <button class="filter-btn ${selectedCategory === c ? 'active' : ''}" onclick="setFilter('${c}')">
           ${c === 'all' ? 'All' : (categoryIcons[c] || '') + ' ' + c}
@@ -1655,7 +1671,19 @@
     }
 
     function renderSystems() {
-      let systems = data.systems;
+      let systems = data.systems || [];
+      
+      // Show empty state if no systems
+      if (systems.length === 0) {
+        document.getElementById('systemsList').innerHTML = `
+          <div style="text-align:center; padding:40px; color:var(--text-tertiary);">
+            <div style="font-size:32px; margin-bottom:12px;">📭</div>
+            <div style="font-size:14px; margin-bottom:4px;">No systems yet</div>
+            <div style="font-size:12px;">Click "Add System" to get started</div>
+          </div>
+        `;
+        return;
+      }
       
       if (selectedCategory !== 'all') {
         systems = systems.filter(s => s.Category === selectedCategory);
@@ -1664,7 +1692,7 @@
       if (searchQuery) {
         systems = systems.filter(s => {
           const nameMatch = s.Name.toLowerCase().includes(searchQuery);
-          const featureMatch = data.features.some(f => 
+          const featureMatch = (data.features || []).some(f => 
             f.SystemID === s.ID && f.Name.toLowerCase().includes(searchQuery)
           );
           return nameMatch || featureMatch;
@@ -1674,7 +1702,7 @@
       systems.sort((a, b) => (a.Priority || 99) - (b.Priority || 99));
 
       document.getElementById('systemsList').innerHTML = systems.map(s => {
-        const features = data.features.filter(f => f.SystemID === s.ID);
+        const features = (data.features || []).filter(f => f.SystemID === s.ID);
         const activeFeatures = features.filter(f => f.Status === 'Active');
         const progress = features.length > 0 
           ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
@@ -1746,7 +1774,7 @@
     }
 
     function renderProgress() {
-      const features = data.features;
+      const features = data.features || [];
       const progress = features.length > 0 
         ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
         : 0;
@@ -1785,6 +1813,7 @@
     function renderFocus() {
       const focus = JSON.parse(localStorage.getItem('lifeOsWeeklyFocus') || 'null');
       const section = document.getElementById('focusSection');
+      const systems = data.systems || [];
       
       if (!focus || !focus.systems || focus.systems.length === 0) {
         section.style.display = 'none';
@@ -1801,9 +1830,9 @@
 
       section.style.display = 'block';
       document.getElementById('focusList').innerHTML = focus.systems.map(id => {
-        const system = data.systems.find(s => s.ID === id);
+        const system = systems.find(s => s.ID === id);
         if (!system) return '';
-        const features = data.features.filter(f => f.SystemID === id);
+        const features = (data.features || []).filter(f => f.SystemID === id);
         const progress = features.length > 0 
           ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
           : 0;
@@ -1819,9 +1848,12 @@
 
     function renderAttention() {
       const section = document.getElementById('attentionSection');
-      const needs = data.systems.filter(s => 
+      const systems = data.systems || [];
+      const features = data.features || [];
+      
+      const needs = systems.filter(s => 
         s.Status === 'Struggle' || s.Status === 'Rework' ||
-        data.features.filter(f => f.SystemID === s.ID && f.Status === 'Active').length === 0
+        features.filter(f => f.SystemID === s.ID && f.Status === 'Active').length === 0
       ).slice(0, 3);
 
       if (needs.length === 0) {
@@ -2256,11 +2288,12 @@
       document.getElementById(id).classList.remove('visible');
     }
 
-    function toast(msg) {
+    function toast(msg, isError = false) {
       const el = document.getElementById('toast');
       el.textContent = msg;
+      el.style.background = isError ? 'rgba(255,69,58,0.9)' : 'var(--surface-2)';
       el.classList.add('visible');
-      setTimeout(() => el.classList.remove('visible'), 2500);
+      setTimeout(() => el.classList.remove('visible'), isError ? 5000 : 2500);
     }
 
     // Start
