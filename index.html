@@ -71,32 +71,44 @@
     }
 
     @media (min-width: 1024px) {
-      body {
+      html, body {
         overflow: hidden;
-        height: 100vh;
+        height: 100%;
+      }
+      
+      body {
         padding: 0;
       }
       
       .container {
-        height: 100vh;
+        height: 100%;
         display: flex;
         flex-direction: column;
-        padding: 20px 32px;
+        padding: 16px 24px;
       }
 
       .header {
         flex-shrink: 0;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
+        padding: 0;
       }
 
-      .north-star {
-        flex-shrink: 0;
+      .header-title {
+        font-size: 24px;
+      }
+
+      /* North Star moves to sidebar on desktop */
+      .north-star-desktop {
+        display: block;
+      }
+      .north-star-mobile {
+        display: none;
       }
 
       .dashboard-grid {
         flex: 1;
-        grid-template-columns: 320px 1fr;
-        gap: 32px;
+        grid-template-columns: 300px 1fr;
+        gap: 24px;
         overflow: hidden;
         min-height: 0;
       }
@@ -104,7 +116,9 @@
       .sidebar {
         height: 100%;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-right: 8px;
+        min-height: 0;
       }
 
       .sidebar::-webkit-scrollbar {
@@ -124,7 +138,11 @@
       .main-content {
         height: 100%;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-right: 8px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
       }
 
       .main-content::-webkit-scrollbar {
@@ -141,34 +159,46 @@
         background: rgba(255,255,255,0.2);
       }
 
+      .systems {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
       .footer {
-        flex-shrink: 0;
-        margin-top: 16px;
+        display: none;
       }
     }
 
     @media (min-width: 1400px) {
       .dashboard-grid {
-        grid-template-columns: 360px 1fr;
+        grid-template-columns: 340px 1fr;
       }
+    }
+
+    /* Mobile: show north star at top */
+    .north-star-desktop {
+      display: none;
+    }
+    .north-star-mobile {
+      display: block;
     }
 
     .sidebar {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .main-content {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     /* Search */
     .search-bar {
       position: relative;
-      margin-bottom: 8px;
       flex-shrink: 0;
     }
     .search-input {
@@ -176,9 +206,9 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px 16px 12px 40px;
+      padding: 10px 14px 10px 36px;
       color: var(--text);
-      font-size: 14px;
+      font-size: 13px;
       transition: all 0.2s;
     }
     .search-input:focus {
@@ -189,35 +219,44 @@
     .search-input::placeholder { color: var(--dim); }
     .search-icon {
       position: absolute;
-      left: 14px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--dim);
-      font-size: 14px;
+      font-size: 12px;
       pointer-events: none;
     }
     .search-shortcut {
       position: absolute;
-      right: 12px;
+      right: 10px;
       top: 50%;
       transform: translateY(-50%);
       background: rgba(255,255,255,0.1);
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 10px;
       color: var(--dim);
       font-family: monospace;
     }
 
     /* Compact North Star for sidebar */
-    @media (min-width: 1024px) {
-      .north-star {
-        padding: 16px;
-        margin-bottom: 0;
-      }
-      .north-star-text {
-        font-size: 15px;
-      }
+    .north-star {
+      padding: 12px;
+      margin-bottom: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .north-star-text {
+      font-size: 13px;
+    }
+    .north-star-label {
+      font-size: 9px;
+      margin-bottom: 6px;
+    }
+    .north-star-edit {
+      font-size: 10px;
+      margin-top: 6px;
     }
 
     /* Setup Modal */
@@ -277,7 +316,37 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Header */
-    .header { text-align: center; margin-bottom: 32px; position: relative; }
+    .header { text-align: center; margin-bottom: 12px; position: relative; }
+    .header-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .header-title { font-size: 20px; font-weight: 600; margin: 2px 0; }
+    .header-meta { font-size: 11px; color: var(--dim); }
+    .header-version { position: absolute; right: 0; top: 0; font-size: 10px; color: var(--dim); }
+    
+    @media (min-width: 1024px) {
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .header-label { display: none; }
+      .header-title { font-size: 18px; margin: 0; }
+      .header-meta { margin: 0; }
+      .header-version { position: static; }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+    }
 
     /* North Star (Phase 4) */
     .north-star {
@@ -425,6 +494,96 @@
     .header-btn:hover { transform: scale(1.02); }
     .header-btn.secondary {
       background: rgba(255,255,255,0.1);
+    }
+    .header-btn-small {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .header-btn-small:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Compact Progress + Momentum */
+    .progress-momentum-compact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .ring-wrapper-small {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+    .ring-value-small {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .momentum-compact {
+      flex: 1;
+      min-width: 0;
+    }
+    .momentum-compact .momentum-label {
+      font-size: 9px;
+      margin-bottom: 4px;
+    }
+    .momentum-compact .momentum-delta {
+      font-size: 18px;
+      margin-bottom: 0;
+    }
+    .momentum-compact .momentum-delta-sub {
+      font-size: 10px;
+    }
+    .momentum-compact .momentum-sparkline {
+      height: 24px;
+      margin: 8px 0;
+    }
+    .momentum-compact .momentum-velocity {
+      font-size: 10px;
+    }
+    .momentum-compact .empty-state {
+      padding: 8px;
+    }
+    .momentum-compact .empty-state-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .momentum-compact .empty-state-title {
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+    .momentum-compact .empty-state-text {
+      font-size: 10px;
+      margin-bottom: 0;
+    }
+
+    /* Compact Stats */
+    .stats-compact {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .stat-mini {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+    .stat-mini-value {
+      font-weight: 600;
+      color: var(--text);
     }
 
     /* Progress Ring */
@@ -658,87 +817,46 @@
 
     /* Mobile Layout Optimization (G5) */
     @media (max-width: 1023px) {
-      .stats { grid-template-columns: repeat(4, 1fr); }
-      
-      .sidebar {
-        order: 1;
+      .container {
+        padding: 16px;
       }
       
-      .main-content {
-        order: 2;
+      .header {
+        text-align: center;
+        margin-bottom: 16px;
       }
-
-      /* Reorder sidebar elements for mobile */
-      .sidebar {
-        display: contents;
+      
+      .header-left, .header-right {
+        justify-content: center;
       }
-
-      #dashboard {
+      
+      .dashboard-grid {
         display: flex;
         flex-direction: column;
         gap: 16px;
       }
-
-      .dashboard-grid {
-        display: contents;
+      
+      .sidebar, .main-content {
+        width: 100%;
       }
-
-      /* Mobile order: Most important first */
-      .header { order: 1; }
-      .north-star { order: 2; }
-      .quarterly-goals { order: 3; margin-bottom: 0; }
-      .weekly-focus { order: 4; margin-bottom: 0; }
-      .progress-momentum-row { order: 5; margin-bottom: 0; }
-      .attention-queue { order: 6; margin-bottom: 0; }
-      .search-bar { order: 7; }
-      .filters { order: 8; }
-      .edit-hint { order: 9; }
-      .systems { order: 10; }
-      .stats { order: 11; }
-      .header-actions { order: 12; }
-      .footer { order: 13; }
-
-      /* Hide less important elements on mobile initially */
-      .edit-hint {
-        display: none;
-      }
-
-      /* Compact mobile progress row */
-      .progress-momentum-row {
+      
+      .progress-momentum-compact {
         flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
       }
-
-      .ring-wrapper {
-        width: 100px;
-        height: 100px;
-      }
-
-      .ring-value {
-        font-size: 24px;
-      }
-
-      .momentum-card {
-        flex: 1;
-        min-width: 0;
+      
+      .stats-compact {
+        justify-content: center;
       }
     }
 
     @media (max-width: 480px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      
-      .progress-momentum-row {
+      .progress-momentum-compact {
         flex-direction: column;
+        align-items: center;
       }
       
-      .ring-wrapper {
-        width: 120px;
-        height: 120px;
-      }
-      
-      .ring-value {
-        font-size: 28px;
+      .filters {
+        justify-content: center;
       }
     }
 
@@ -1246,26 +1364,36 @@
     <!-- Dashboard -->
     <div id="dashboard" style="display: none;">
       <div class="header">
-        <div class="header-label">Life Operating System</div>
-        <h1 class="header-title">Control Center</h1>
-        <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.6.0</div>
+        <div class="header-left">
+          <h1 class="header-title">Life OS</h1>
+          <div class="header-meta" id="lastUpdated"></div>
+        </div>
+        <div class="header-right">
+          <div class="header-version">v1.6.1</div>
+          <button class="header-btn-small" onclick="loadData()" title="Refresh">↻</button>
+          <button class="header-btn-small" onclick="openReviewModal()" title="Weekly Review">📋</button>
+        </div>
       </div>
 
-      <!-- North Star (Phase 4) -->
-      <div class="north-star" id="northStar" onclick="editNorthStar()">
+      <!-- North Star Mobile Only -->
+      <div class="north-star north-star-mobile" id="northStarMobile" onclick="editNorthStar()">
         <div class="north-star-label">★ North Star</div>
-        <div class="north-star-text" id="northStarText"></div>
-        <div class="north-star-edit">Click to edit</div>
+        <div class="north-star-text" id="northStarTextMobile"></div>
       </div>
 
       <div class="dashboard-grid">
         <!-- SIDEBAR -->
         <div class="sidebar">
+          <!-- North Star Desktop -->
+          <div class="north-star north-star-desktop" id="northStarDesktop" onclick="editNorthStar()">
+            <div class="north-star-label">★ North Star</div>
+            <div class="north-star-text" id="northStarTextDesktop"></div>
+          </div>
+
           <!-- Quarterly Goals (Phase 5) -->
           <div class="quarterly-goals" id="quarterlyGoals">
             <div class="quarterly-header">
-              <div class="quarterly-label">◆ Quarterly Goals</div>
+              <div class="quarterly-label">◆ Q Goals</div>
               <div class="quarterly-period" id="quarterlyPeriod"></div>
             </div>
             <div class="quarterly-list" id="quarterlyList"></div>
@@ -1273,62 +1401,35 @@
 
           <!-- WEEKLY FOCUS (Phase 2) -->
           <div class="weekly-focus" id="weeklyFocus" style="display: none;">
-            <div class="weekly-focus-label">⚡ This Week's Focus</div>
+            <div class="weekly-focus-label">⚡ This Week</div>
             <div class="weekly-focus-systems" id="focusSystems"></div>
           </div>
 
-          <div class="progress-momentum-row">
-            <div class="ring-wrapper">
-              <svg class="ring" width="140" height="140">
-                <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
-                <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="60" stroke-dasharray="377" stroke-dashoffset="377"></circle>
+          <!-- Progress + Momentum compact -->
+          <div class="progress-momentum-compact">
+            <div class="ring-wrapper-small">
+              <svg class="ring" width="80" height="80">
+                <circle class="ring-bg" cx="40" cy="40" r="34"></circle>
+                <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"></circle>
               </svg>
               <div class="ring-text">
-                <div class="ring-value" id="overallProgress">0%</div>
-                <div class="ring-label">Complete</div>
+                <div class="ring-value-small" id="overallProgress">0%</div>
               </div>
             </div>
-
-            <!-- Momentum Card (Phase 3) -->
-            <div class="momentum-card" id="momentumCard">
-              <div class="momentum-card empty">
-                Complete a Weekly Review<br>to unlock Momentum tracking
-              </div>
-            </div>
+            <div class="momentum-compact" id="momentumCard"></div>
           </div>
 
           <!-- ATTENTION QUEUE (Phase 2) -->
           <div class="attention-queue hidden" id="attentionQueue">
-            <div class="attention-queue-label">⚠️ ATTENTION NEEDED</div>
+            <div class="attention-queue-label">⚠️ Attention</div>
             <div id="attentionItems"></div>
           </div>
 
-          <!-- Stats -->
-          <div class="stats">
-            <div class="stat">
-              <div class="stat-label">Systems</div>
-              <div class="stat-value" id="statSystems">0</div>
-              <div class="stat-sub" id="statRunning">0 running</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Features</div>
-              <div class="stat-value" id="statFeatures">0</div>
-              <div class="stat-sub" id="statActive">0 active</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Need Work</div>
-              <div class="stat-value" id="statNeedWork" style="color: var(--orange)">0</div>
-              <div class="stat-sub">Systems</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Backlog</div>
-              <div class="stat-value" id="statBacklog" style="color: var(--gray)">0</div>
-              <div class="stat-sub">Systems</div>
-            </div>
-          </div>
-
-          <div class="header-actions">
-            <button class="header-btn" onclick="openReviewModal()">📋 Weekly Review</button>
+          <!-- Stats compact -->
+          <div class="stats-compact">
+            <div class="stat-mini"><span class="stat-mini-value" id="statSystems">0</span> systems</div>
+            <div class="stat-mini"><span class="stat-mini-value" id="statFeatures">0</span> features</div>
+            <div class="stat-mini" style="color: var(--orange);"><span class="stat-mini-value" id="statNeedWork">0</span> need work</div>
           </div>
         </div>
 
@@ -1337,26 +1438,15 @@
           <!-- Search -->
           <div class="search-bar">
             <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="searchInput" placeholder="Search systems or features..." onkeyup="handleSearch(event)">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search..." onkeyup="handleSearch(event)">
             <span class="search-shortcut">/</span>
           </div>
 
           <div class="filters" id="filters"></div>
 
-          <div class="edit-hint">
-            <span>⚡</span>
-            <span><strong>Edit:</strong> Click badge = status · Click dots = level · Double-click = rename</span>
-          </div>
-
           <div class="systems" id="systemsList"></div>
-        </div>
-      </div>
-
-      <div class="footer">
-        <div class="footer-text">Life OS · Built for Focus</div>
-        <div style="display: flex; gap: 8px;">
-          <button class="footer-btn" onclick="loadData()">↻ Refresh</button>
-          <button class="footer-btn" onclick="resetConnection()">⚙ Reset</button>
+          
+          <button class="add-system-btn" onclick="openAddSystemModal()">+ Add System</button>
         </div>
       </div>
     </div>
@@ -1484,6 +1574,19 @@
       }
     }
 
+    // B3: Silent API post - no loading state, no reload, returns promise
+    async function apiPostSilent(payload) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Sync failed');
+      }
+      return result;
+    }
+
     // ============================================
     // RENDER
     // ============================================
@@ -1501,18 +1604,19 @@
         ? Math.round(features.reduce((sum, f) => sum + (f.Level / 5), 0) / features.length * 100)
         : 0;
 
-      // Update stats
-      document.getElementById('statSystems').textContent = systems.length;
-      document.getElementById('statRunning').textContent = running + ' running';
-      document.getElementById('statFeatures').textContent = features.length;
-      document.getElementById('statActive').textContent = active + ' active';
-      document.getElementById('statNeedWork').textContent = needWork;
-      document.getElementById('statBacklog').textContent = backlog;
-      document.getElementById('overallProgress').textContent = avgProgress + '%';
-      document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleString('de-DE');
+      // Update stats (with null checks for compact layout)
+      const el = (id) => document.getElementById(id);
+      if (el('statSystems')) el('statSystems').textContent = systems.length;
+      if (el('statRunning')) el('statRunning').textContent = running + ' running';
+      if (el('statFeatures')) el('statFeatures').textContent = features.length;
+      if (el('statActive')) el('statActive').textContent = active + ' active';
+      if (el('statNeedWork')) el('statNeedWork').textContent = needWork;
+      if (el('statBacklog')) el('statBacklog').textContent = backlog;
+      if (el('overallProgress')) el('overallProgress').textContent = avgProgress + '%';
+      if (el('lastUpdated')) el('lastUpdated').textContent = new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
-      // Progress ring (r=60, circumference = 2*PI*60 = 377)
-      const circumference = 2 * Math.PI * 60;
+      // Progress ring (r=34, circumference = 2*PI*34 = 213.6)
+      const circumference = 2 * Math.PI * 34;
       document.getElementById('ringFill').style.strokeDashoffset = circumference - (avgProgress / 100) * circumference;
 
       // Render Momentum (Phase 3)
@@ -1893,31 +1997,98 @@
       e.stopPropagation();
       const idx = statusOrder.indexOf(currentStatus);
       const newStatus = statusOrder[(idx + 1) % statusOrder.length];
-      apiPost({ action: 'updateSystemStatus', systemId: id, status: newStatus });
+      
+      // B3: Optimistic Update
+      const system = data.systems.find(s => s.ID === id);
+      if (system) {
+        system.Status = newStatus;
+        renderSystems();
+        render(); // Update stats
+        
+        apiPostSilent({ action: 'updateSystemStatus', systemId: id, status: newStatus })
+          .catch(() => {
+            system.Status = currentStatus;
+            renderSystems();
+            render();
+            toast('Sync failed - reverted');
+          });
+      }
     }
 
     function editSystemName(e, id, currentName) {
       e.stopPropagation();
       const newName = prompt('System umbenennen:', currentName);
       if (newName && newName !== currentName) {
-        apiPost({ action: 'updateSystemName', systemId: id, name: newName });
+        // B3: Optimistic Update
+        const system = data.systems.find(s => s.ID === id);
+        if (system) {
+          system.Name = newName;
+          renderSystems();
+          
+          apiPostSilent({ action: 'updateSystemName', systemId: id, name: newName })
+            .catch(() => {
+              system.Name = currentName;
+              renderSystems();
+              toast('Sync failed - reverted');
+            });
+        }
+      }
+    }
+
+    function setFeatureLevel(id, level) {
+      // B3: Optimistic Update - UI first, sync in background
+      const feature = data.features.find(f => f.ID === id);
+      if (feature) {
+        const oldLevel = feature.Level;
+        feature.Level = level;
+        renderSystems(); // Instant UI update
+        
+        // Sync in background (no await, no loading)
+        apiPostSilent({ action: 'updateFeatureLevel', featureId: id, level: level })
+          .catch(() => {
+            // Revert on error
+            feature.Level = oldLevel;
+            renderSystems();
+            toast('Sync failed - reverted');
+          });
       }
     }
 
     function toggleFeatureStatus(id, currentStatus) {
-      const newStatus = currentStatus === 'Active' ? 'Planned' : 'Active';
-      apiPost({ action: 'updateFeatureStatus', featureId: id, status: newStatus });
-    }
-
-    function setFeatureLevel(id, level) {
-      apiPost({ action: 'updateFeatureLevel', featureId: id, level: level });
+      // B3: Optimistic Update
+      const feature = data.features.find(f => f.ID === id);
+      if (feature) {
+        const newStatus = currentStatus === 'Active' ? 'Planned' : 'Active';
+        const oldStatus = feature.Status;
+        feature.Status = newStatus;
+        renderSystems();
+        
+        apiPostSilent({ action: 'updateFeatureStatus', featureId: id, status: newStatus })
+          .catch(() => {
+            feature.Status = oldStatus;
+            renderSystems();
+            toast('Sync failed - reverted');
+          });
+      }
     }
 
     function editFeatureName(e, id, currentName) {
       e.stopPropagation();
       const newName = prompt('Feature umbenennen:', currentName);
       if (newName && newName !== currentName) {
-        apiPost({ action: 'updateFeatureName', featureId: id, name: newName });
+        // B3: Optimistic Update
+        const feature = data.features.find(f => f.ID === id);
+        if (feature) {
+          feature.Name = newName;
+          renderSystems();
+          
+          apiPostSilent({ action: 'updateFeatureName', featureId: id, name: newName })
+            .catch(() => {
+              feature.Name = currentName;
+              renderSystems();
+              toast('Sync failed - reverted');
+            });
+        }
       }
     }
 
@@ -2408,15 +2579,21 @@
     // North Star (Phase 4)
     function renderNorthStar() {
       const saved = localStorage.getItem('lifeOsNorthStar') || '';
-      const textEl = document.getElementById('northStarText');
       
-      if (saved) {
-        textEl.textContent = '"' + saved + '"';
-        textEl.classList.remove('empty');
-      } else {
-        textEl.textContent = 'Define your North Star...';
-        textEl.classList.add('empty');
-      }
+      const updateElement = (id) => {
+        const textEl = document.getElementById(id);
+        if (!textEl) return;
+        if (saved) {
+          textEl.textContent = '"' + saved + '"';
+          textEl.classList.remove('empty');
+        } else {
+          textEl.textContent = 'Define your North Star...';
+          textEl.classList.add('empty');
+        }
+      };
+      
+      updateElement('northStarTextMobile');
+      updateElement('northStarTextDesktop');
     }
 
     function editNorthStar() {
