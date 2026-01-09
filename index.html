@@ -5,1046 +5,1091 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Life OS</title>
   
-  <!-- PWA Meta Tags -->
+  <!-- PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Life OS">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Life Operating System – Control Center">
   
-  <!-- PWA Icons (Base64 embedded for single-file simplicity) -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>">
-  
-  <!-- Manifest (inline via data URI) -->
-  <link rel="manifest" href="data:application/json,{%22name%22:%22Life%20OS%22,%22short_name%22:%22Life%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23000000%22,%22theme_color%22:%22%23000000%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='40' fill='%230A84FF'>◎</text></svg>%22,%22sizes%22:%22any%22,%22type%22:%22image/svg+xml%22}]}">
-
   <style>
+    /* ═══════════════════════════════════════════════════════════
+       RESET & VARIABLES
+       ═══════════════════════════════════════════════════════════ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    
     :root {
       --bg: #000;
-      --card: rgba(255,255,255,0.03);
-      --border: rgba(255,255,255,0.06);
+      --surface: #111;
+      --surface-2: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
       --text: #fff;
-      --muted: rgba(255,255,255,0.4);
-      --dim: rgba(255,255,255,0.2);
-      --blue: #0A84FF;
-      --green: #32D74B;
+      --text-secondary: rgba(255,255,255,0.6);
+      --text-tertiary: rgba(255,255,255,0.3);
+      --accent: #0A84FF;
+      --green: #30D158;
       --orange: #FF9F0A;
       --red: #FF453A;
-      --gray: #8E8E93;
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
+      --purple: #BF5AF2;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-      padding: calc(40px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
-      line-height: 1.5;
+      line-height: 1.4;
       -webkit-font-smoothing: antialiased;
-      -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
     }
 
-    /* Standalone mode (PWA) adjustments */
-    @media (display-mode: standalone) {
-      body { padding-top: calc(60px + var(--safe-top)); }
-    }
-
-    .container { 
-      max-width: 100%; 
-      margin: 0 auto; 
-      padding: 0 24px;
-    }
-
-    /* 2-Column Layout */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-
-    @media (min-width: 1024px) {
-      html, body {
-        overflow: hidden;
-        height: 100%;
-      }
-      
-      body {
-        padding: 0;
-      }
-      
-      .container {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 16px 24px;
-      }
-
-      .header {
-        flex-shrink: 0;
-        margin-bottom: 12px;
-        padding: 0;
-      }
-
-      .header-title {
-        font-size: 24px;
-      }
-
-      /* North Star moves to sidebar on desktop */
-      .north-star-desktop {
-        display: block;
-      }
-      .north-star-mobile {
-        display: none;
-      }
-
-      .dashboard-grid {
-        flex: 1;
-        grid-template-columns: 300px 1fr;
-        gap: 24px;
-        overflow: hidden;
-        min-height: 0;
-      }
-
-      .sidebar {
-        height: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 8px;
-        min-height: 0;
-      }
-
-      .sidebar::-webkit-scrollbar {
-        width: 6px;
-      }
-      .sidebar::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .sidebar::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-      }
-      .sidebar::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.2);
-      }
-
-      .main-content {
-        height: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 8px;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .main-content::-webkit-scrollbar {
-        width: 6px;
-      }
-      .main-content::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .main-content::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-      }
-      .main-content::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.2);
-      }
-
-      .systems {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 0;
-      }
-
-      .footer {
-        display: none;
-      }
-    }
-
-    @media (min-width: 1400px) {
-      .dashboard-grid {
-        grid-template-columns: 340px 1fr;
-      }
-    }
-
-    /* Mobile: show north star at top */
-    .north-star-desktop {
-      display: none;
-    }
-    .north-star-mobile {
-      display: block;
-    }
-
-    .sidebar {
+    /* ═══════════════════════════════════════════════════════════
+       APP SHELL - Fixed viewport layout
+       ═══════════════════════════════════════════════════════════ */
+    .app {
+      height: 100%;
       display: flex;
       flex-direction: column;
-      gap: 12px;
     }
 
-    .main-content {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* Search */
-    .search-bar {
-      position: relative;
+    /* Top Bar */
+    .topbar {
       flex-shrink: 0;
-    }
-    .search-input {
-      width: 100%;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px 10px 36px;
-      color: var(--text);
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-    .search-input:focus {
-      outline: none;
-      border-color: var(--blue);
-      background: rgba(255,255,255,0.05);
-    }
-    .search-input::placeholder { color: var(--dim); }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--dim);
-      font-size: 12px;
-      pointer-events: none;
-    }
-    .search-shortcut {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.1);
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-size: 10px;
-      color: var(--dim);
-      font-family: monospace;
+      height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
     }
 
-    /* Compact North Star for sidebar */
-    .north-star {
-      padding: 12px;
-      margin-bottom: 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-    .north-star-text {
-      font-size: 13px;
-    }
-    .north-star-label {
-      font-size: 9px;
-      margin-bottom: 6px;
-    }
-    .north-star-edit {
-      font-size: 10px;
-      margin-top: 6px;
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    /* Setup Modal */
-    .modal {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(20px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 1000; padding: 20px;
-    }
-    .modal.hidden { display: none; }
-    .modal-content {
-      background: #1c1c1e;
-      border-radius: 20px;
-      padding: 32px;
-      max-width: 500px;
-      width: 100%;
-    }
-    .modal-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-    .modal-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
-    .modal-input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text);
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .modal-input:focus { outline: none; border-color: var(--blue); }
-    .modal-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: var(--blue);
-      color: var(--text);
+    .topbar-logo {
       font-size: 15px;
       font-weight: 600;
-      cursor: pointer;
-    }
-    .modal-btn:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; }
-    .modal-hint { font-size: 12px; color: var(--dim); margin-top: 20px; line-height: 1.6; }
-    .modal-hint strong { color: var(--muted); }
-
-    /* Loading */
-    .loading { text-align: center; padding: 80px 20px; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--blue);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Header */
-    .header { text-align: center; margin-bottom: 12px; position: relative; }
-    .header-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
-    .header-title { font-size: 20px; font-weight: 600; margin: 2px 0; }
-    .header-meta { font-size: 11px; color: var(--dim); }
-    .header-version { position: absolute; right: 0; top: 0; font-size: 10px; color: var(--dim); }
-    
-    @media (min-width: 1024px) {
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        text-align: left;
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border);
-      }
-      .header-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .header-label { display: none; }
-      .header-title { font-size: 18px; margin: 0; }
-      .header-meta { margin: 0; }
-      .header-version { position: static; }
-      .header-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-    }
-
-    /* North Star (Phase 4) */
-    .north-star {
-      text-align: center;
-      margin-bottom: 24px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-radius: 16px;
-    }
-    .north-star:hover {
-      background: rgba(255,255,255,0.02);
-    }
-    .north-star-label {
-      font-size: 10px;
-      color: var(--dim);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
-    }
-    .north-star-text {
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--muted);
-      font-style: italic;
-      line-height: 1.5;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .north-star-text.empty {
-      color: var(--dim);
-      font-style: normal;
-    }
-    .north-star-edit {
-      font-size: 11px;
-      color: var(--dim);
-      margin-top: 8px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .north-star:hover .north-star-edit {
-      opacity: 1;
-    }
-
-    /* Quarterly Goals (Phase 5) */
-    .quarterly-goals {
-      background: linear-gradient(135deg, rgba(94,92,230,0.1), rgba(175,82,222,0.1));
-      border: 1px solid rgba(94,92,230,0.2);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 0;
-    }
-    .quarterly-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      gap: 6px;
     }
-    .quarterly-label {
-      font-size: 10px;
-      color: #AF52DE;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 600;
+
+    .topbar-logo span {
+      color: var(--accent);
     }
-    .quarterly-period {
-      font-size: 11px;
-      color: var(--muted);
+
+    .topbar-time {
+      font-size: 12px;
+      color: var(--text-tertiary);
     }
-    .quarterly-list {
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .topbar-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+
+    .topbar-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+
+    .topbar-btn.primary {
+      background: var(--accent);
+      color: white;
+      width: auto;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .topbar-btn.primary:hover {
+      background: #0070E0;
+    }
+
+    /* Main Layout */
+    .main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      overflow: hidden;
     }
-    .quarterly-item {
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+    }
+
+    /* Sidebar Sections */
+    .sidebar-section {
+      margin-bottom: 20px;
+    }
+
+    .sidebar-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      padding-left: 2px;
+    }
+
+    /* North Star */
+    .north-star-card {
+      background: linear-gradient(135deg, rgba(191,90,242,0.15), rgba(10,132,255,0.15));
+      border: 1px solid rgba(191,90,242,0.2);
+      border-radius: 12px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .north-star-card:hover {
+      border-color: rgba(191,90,242,0.4);
+    }
+
+    .north-star-icon {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .north-star-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .north-star-text.empty {
+      color: var(--text-tertiary);
+      font-style: normal;
+    }
+
+    /* Goals */
+    .goal-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .goal-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .goal-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .goal-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple);
+      min-width: 16px;
+    }
+
+    .goal-text {
+      font-size: 13px;
+      flex: 1;
+    }
+
+    .goal-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .goal-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Progress Card */
+    .progress-card {
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .progress-ring-wrap {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.1);
+      stroke-width: 6;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s ease;
+    }
+
+    .progress-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .progress-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .progress-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .progress-delta {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .progress-delta.positive { color: var(--green); }
+    .progress-delta.negative { color: var(--red); }
+    .progress-delta.neutral { color: var(--text-tertiary); }
+
+    .progress-sub {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* Focus */
+    .focus-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .quarterly-item:hover {
-      background: rgba(0,0,0,0.5);
-    }
-    .quarterly-number {
-      font-size: 12px;
-      font-weight: 700;
-      color: #AF52DE;
-      min-width: 20px;
-    }
-    .quarterly-text {
-      flex: 1;
-      font-size: 13px;
-    }
-    .quarterly-text.empty {
-      color: var(--dim);
-    }
-    .quarterly-add {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px;
-      border: 1px dashed rgba(175,82,222,0.3);
-      border-radius: 10px;
-      color: var(--dim);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .quarterly-add:hover {
-      border-color: #AF52DE;
-      color: #AF52DE;
-    }
-    .quarterly-empty {
-      text-align: center;
-      color: var(--dim);
-      font-size: 12px;
-      padding: 12px;
-    }
-    .header-label {
-      font-size: 11px; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;
-    }
-    .header-title {
-      font-size: 34px; font-weight: 700;
-      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .header-meta { font-size: 13px; color: var(--dim); margin-top: 8px; }
-    .header-version { font-size: 11px; color: var(--dim); margin-top: 4px; font-family: monospace; }
-    .header-actions { display: flex; gap: 8px; margin-top: 8px; }
-    .header-btn {
-      flex: 1;
-      background: linear-gradient(135deg, var(--blue), #5E5CE6);
-      border: none; border-radius: 10px;
-      padding: 12px 16px;
-      color: var(--text); font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: transform 0.2s;
-      text-align: center;
-    }
-    .header-btn:hover { transform: scale(1.02); }
-    .header-btn.secondary {
-      background: rgba(255,255,255,0.1);
-    }
-    .header-btn-small {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      color: var(--text);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .header-btn-small:hover {
-      background: rgba(255,255,255,0.2);
+      background: var(--surface-2);
+      border-radius: 8px;
+      margin-bottom: 6px;
     }
 
-    /* Compact Progress + Momentum */
-    .progress-momentum-compact {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--card);
-      border: 1px solid var(--border);
+    .focus-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .focus-icon {
+      font-size: 14px;
+    }
+
+    .focus-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .focus-progress {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* Attention */
+    .attention-section {
+      background: rgba(255,69,58,0.08);
+      border: 1px solid rgba(255,69,58,0.15);
       border-radius: 12px;
       padding: 12px;
     }
-    .ring-wrapper-small {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      flex-shrink: 0;
+
+    .attention-section .section-label {
+      color: var(--red);
     }
-    .ring-value-small {
+
+    .attention-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 12px;
+    }
+
+    .attention-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .attention-rank {
+      color: var(--red);
+      font-weight: 600;
+      min-width: 16px;
+    }
+
+    .attention-name {
+      flex: 1;
+    }
+
+    .attention-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,69,58,0.2);
+      color: var(--red);
+    }
+
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat-chip {
+      flex: 1;
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-value {
       font-size: 18px;
       font-weight: 600;
     }
-    .momentum-compact {
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CONTENT AREA
+       ═══════════════════════════════════════════════════════════ */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Content Header */
+    .content-header {
+      flex-shrink: 0;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 300px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px 8px 32px;
+      color: var(--text);
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--surface-2);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: 12px;
+    }
+
+    .search-hint {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      background: rgba(255,255,255,0.08);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
+    }
+
+    /* Content Scroll */
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      min-height: 0;
+    }
+
+    .content-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .content-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+
+    .content-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SYSTEM CARDS
+       ═══════════════════════════════════════════════════════════ */
+    .systems-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .system-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.15s;
+    }
+
+    .system-card:hover {
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .system-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .system-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .system-info {
       flex: 1;
       min-width: 0;
     }
-    .momentum-compact .momentum-label {
-      font-size: 9px;
-      margin-bottom: 4px;
-    }
-    .momentum-compact .momentum-delta {
-      font-size: 18px;
-      margin-bottom: 0;
-    }
-    .momentum-compact .momentum-delta-sub {
-      font-size: 10px;
-    }
-    .momentum-compact .momentum-sparkline {
-      height: 24px;
-      margin: 8px 0;
-    }
-    .momentum-compact .momentum-velocity {
-      font-size: 10px;
-    }
-    .momentum-compact .empty-state {
-      padding: 8px;
-    }
-    .momentum-compact .empty-state-icon {
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
-    .momentum-compact .empty-state-title {
-      font-size: 12px;
-      margin-bottom: 2px;
-    }
-    .momentum-compact .empty-state-text {
-      font-size: 10px;
-      margin-bottom: 0;
-    }
 
-    /* Compact Stats */
-    .stats-compact {
+    .system-title-row {
       display: flex;
+      align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
+      margin-bottom: 4px;
     }
-    .stat-mini {
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 10px;
-    }
-    .stat-mini-value {
+
+    .system-name {
+      font-size: 14px;
       font-weight: 600;
-      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* Progress Ring */
-    .ring-container { display: flex; justify-content: center; margin-bottom: 40px; }
+    .system-edit-btn {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px;
+      transition: all 0.15s;
+    }
 
-    /* Progress + Momentum Row */
-    .progress-momentum-row {
+    .system-header:hover .system-edit-btn {
+      opacity: 1;
+    }
+
+    .system-edit-btn:hover {
+      color: var(--accent);
+    }
+
+    .system-meta-row {
       display: flex;
-      justify-content: center;
-      align-items: stretch;
-      gap: 16px;
-      margin-bottom: 0;
-      flex-wrap: wrap;
-    }
-
-    @media (min-width: 1024px) {
-      .progress-momentum-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .ring-wrapper {
-        margin: 0 auto;
-      }
-    }
-
-    .ring-wrapper { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
-
-    /* Momentum Card (Phase 3) */
-    .momentum-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      min-width: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    @media (min-width: 1024px) {
-      .momentum-card {
-        min-width: auto;
-      }
-    }
-
-    .momentum-card.empty {
-      justify-content: center;
       align-items: center;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
+      gap: 12px;
     }
-    .momentum-label {
+
+    .system-badge {
       font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-    .momentum-delta {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 2px;
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-    .momentum-delta.positive { color: var(--green); }
-    .momentum-delta.negative { color: var(--red); }
-    .momentum-delta.neutral { color: var(--gray); }
-    .momentum-delta-sub {
-      font-size: 11px;
-      font-weight: 400;
-      color: var(--muted);
-    }
-    .momentum-sparkline {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 32px;
-      margin: 12px 0;
-    }
-    .sparkline-bar {
-      flex: 1;
-      background: var(--blue);
-      border-radius: 2px;
-      min-width: 6px;
-      transition: height 0.5s ease-out;
-      opacity: 0.4;
-    }
-    .sparkline-bar.current { opacity: 1; }
-    .sparkline-bar:hover { opacity: 1; }
-    .momentum-velocity {
-      font-size: 12px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .velocity-value {
-      color: var(--text);
-      font-weight: 600;
-    }
-    .velocity-trend {
-      font-size: 11px;
-      padding: 2px 6px;
+      font-weight: 500;
+      padding: 3px 8px;
       border-radius: 4px;
-    }
-    .velocity-trend.positive { background: rgba(52,199,89,0.15); color: var(--green); }
-    .velocity-trend.negative { background: rgba(255,69,58,0.15); color: var(--red); }
-    .velocity-trend.neutral { background: rgba(142,142,147,0.15); color: var(--gray); }
-
-    /* Weekly Focus (Phase 2) */
-    .weekly-focus {
-      background: linear-gradient(135deg, rgba(10,132,255,0.1), rgba(94,92,230,0.1));
-      border: 1px solid rgba(10,132,255,0.2);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 0;
-    }
-    .weekly-focus-label {
-      font-size: 10px;
-      color: var(--blue);
+      cursor: pointer;
+      transition: all 0.15s;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      font-weight: 600;
+      letter-spacing: 0.3px;
     }
-    .weekly-focus-systems {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+
+    .system-badge:hover {
+      filter: brightness(1.2);
     }
-    .focus-system-card {
-      background: rgba(0,0,0,0.3);
-      border-radius: 10px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+
+    .system-badge.running {
+      background: rgba(48,209,88,0.15);
+      color: var(--green);
     }
-    .focus-system-name {
-      font-size: 13px;
-      font-weight: 600;
+
+    .system-badge.rework {
+      background: rgba(255,159,10,0.15);
+      color: var(--orange);
     }
-    .focus-system-progress {
+
+    .system-badge.struggle {
+      background: rgba(255,69,58,0.15);
+      color: var(--red);
+    }
+
+    .system-badge.backlog {
+      background: rgba(142,142,147,0.15);
+      color: #8E8E93;
+    }
+
+    .system-feature-count {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .system-progress-bar {
+      flex: 1;
+      max-width: 80px;
       height: 4px;
       background: rgba(255,255,255,0.1);
       border-radius: 2px;
       overflow: hidden;
     }
-    .focus-system-progress-fill {
+
+    .system-progress-fill {
       height: 100%;
       border-radius: 2px;
-      transition: width 0.5s;
-    }
-    .focus-system-meta {
-      font-size: 11px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
+      transition: width 0.3s ease;
     }
 
-    /* Attention Queue (Phase 2) */
-    .attention-queue {
-      background: rgba(255,69,58,0.05);
-      border: 1px solid rgba(255,69,58,0.15);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-    .attention-queue.hidden { display: none; }
-    .attention-queue-label {
-      font-size: 10px;
-      color: var(--red);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 10px;
+    .system-progress-text {
+      font-size: 12px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      min-width: 36px;
+      text-align: right;
     }
-    .attention-item {
+
+    .system-chevron {
+      color: var(--text-tertiary);
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+
+    .system-card.expanded .system-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Features */
+    .system-features {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .system-card.expanded .system-features {
+      display: block;
+    }
+
+    .feature-row {
       display: flex;
       align-items: center;
-      gap: 10px;
       padding: 10px 0;
+      gap: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.04);
     }
-    .attention-item:last-child { border-bottom: none; }
-    .attention-rank {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--red);
-      min-width: 20px;
+
+    .feature-row:last-of-type {
+      border-bottom: none;
     }
-    .attention-info { flex: 1; }
-    .attention-name { font-size: 13px; font-weight: 500; }
-    .attention-reason { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .attention-action {
-      font-size: 11px;
-      color: var(--blue);
+
+    .feature-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
       cursor: pointer;
-    }
-    .ring-wrapper { position: relative; width: 160px; height: 160px; }
-    .ring { transform: rotate(-90deg); }
-    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
-    .ring-fill {
-      fill: none; stroke: var(--blue); stroke-width: 8;
-      stroke-linecap: round; transition: stroke-dashoffset 0.8s ease-out;
-    }
-    .ring-text {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%); text-align: center;
-    }
-    .ring-value { font-size: 36px; font-weight: 600; }
-    .ring-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* Stats */
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 0; }
-    .stat {
-      background: var(--card); border-radius: 10px;
-      padding: 12px; border: 1px solid var(--border);
-    }
-    .stat-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .stat-value { font-size: 22px; font-weight: 600; }
-    .stat-sub { font-size: 10px; color: var(--dim); margin-top: 2px; }
-
-    /* Mobile Layout Optimization (G5) */
-    @media (max-width: 1023px) {
-      .container {
-        padding: 16px;
-      }
-      
-      .header {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      
-      .header-left, .header-right {
-        justify-content: center;
-      }
-      
-      .dashboard-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      
-      .sidebar, .main-content {
-        width: 100%;
-      }
-      
-      .progress-momentum-compact {
-        flex-direction: row;
-      }
-      
-      .stats-compact {
-        justify-content: center;
-      }
+      transition: all 0.15s;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 480px) {
-      .progress-momentum-compact {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .filters {
-        justify-content: center;
-      }
+    .feature-status.active {
+      background: var(--green);
     }
 
-    /* Filters */
-    .filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 6px 12px; border-radius: 16px; border: none;
-      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
-      font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    .feature-status.planned {
+      background: rgba(255,255,255,0.2);
     }
-    .filter-btn:hover { background: rgba(255,255,255,0.12); }
-    .filter-btn.active { background: #fff; color: #000; }
 
-    /* Edit Hint */
-    .edit-hint {
-      background: rgba(10, 132, 255, 0.1);
-      border-radius: 10px; padding: 10px 14px;
-      margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
-      font-size: 12px; color: var(--muted);
+    .feature-status:hover {
+      transform: scale(1.3);
     }
-    .edit-hint span:first-child { color: var(--blue); }
-    .edit-hint strong { color: var(--text); }
 
-    /* System Cards */
-    .systems { display: flex; flex-direction: column; gap: 8px; }
-    .system {
-      background: var(--card); border-radius: 12px;
-      border: 1px solid var(--border); overflow: hidden;
-    }
-    .system-header {
-      padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
-    }
-    .system-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; font-size: 16px;
-    }
-    .system-info { flex: 1; }
-    .system-title { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .system-name { font-size: 14px; font-weight: 600; }
-    .system-meta { display: flex; align-items: center; gap: 12px; }
-    .system-count { font-size: 11px; color: var(--muted); }
-    .progress-bar { flex: 1; max-width: 100px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
-    .system-progress { font-size: 11px; font-weight: 600; min-width: 32px; text-align: right; }
-    .system-chevron { color: var(--dim); transition: transform 0.3s; padding: 4px; font-size: 12px; }
-    .system.expanded .system-chevron { transform: rotate(180deg); }
-
-    /* Status Badge */
-    .badge {
-      padding: 3px 8px; border-radius: 5px;
-      font-size: 10px; font-weight: 500;
-      text-transform: uppercase; letter-spacing: 0.3px;
-      cursor: pointer; transition: all 0.2s; user-select: none;
-    }
-    .badge:hover { filter: brightness(1.2); }
-    .badge-running { background: rgba(52,199,89,0.15); color: var(--green); }
-    .badge-rework { background: rgba(255,159,10,0.15); color: var(--orange); }
-    .badge-struggle { background: rgba(255,69,58,0.15); color: var(--red); }
-    .badge-backlog { background: rgba(142,142,147,0.15); color: var(--gray); }
-
-    /* Features List */
-    .features { padding: 0 16px 16px; border-top: 1px solid var(--border); display: none; }
-    .system.expanded .features { display: block; }
-    .feature {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); gap: 10px;
-      position: relative;
-    }
-    .feature:last-of-type { border-bottom: none; }
-    .feature-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-    .feature-dot {
-      width: 8px; height: 8px; border-radius: 50%; cursor: pointer; transition: all 0.2s;
-    }
-    .feature-dot.active { background: var(--green); }
-    .feature-dot.planned { background: rgba(255,255,255,0.2); }
-    .feature-dot:hover { transform: scale(1.3); }
-    
-    /* G3: Quick Edit on Hover */
-    .feature-name-wrapper {
+    .feature-name-wrap {
+      flex: 1;
       display: flex;
       align-items: center;
       gap: 6px;
-      flex: 1;
       min-width: 0;
     }
-    .feature-name { font-size: 13px; flex: 1; cursor: default; }
-    .feature-name.planned { color: var(--muted); }
+
+    .feature-name {
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feature-name.planned {
+      color: var(--text-secondary);
+    }
+
     .feature-edit-btn {
       opacity: 0;
       background: none;
       border: none;
-      color: var(--dim);
+      color: var(--text-tertiary);
+      font-size: 10px;
       cursor: pointer;
-      font-size: 12px;
-      padding: 2px 4px;
-      transition: all 0.2s;
-      flex-shrink: 0;
+      transition: all 0.15s;
     }
-    .feature:hover .feature-edit-btn { opacity: 1; }
-    .feature-edit-btn:hover { color: var(--blue); }
-    
-    .system-name-wrapper {
+
+    .feature-row:hover .feature-edit-btn {
+      opacity: 1;
+    }
+
+    .feature-edit-btn:hover {
+      color: var(--accent);
+    }
+
+    .feature-level {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
-    .system-edit-btn {
+
+    .feature-level-text {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      min-width: 28px;
+    }
+
+    .level-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .level-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .level-dot.filled {
+      background: var(--accent);
+    }
+
+    .level-dot:hover {
+      transform: scale(1.4);
+    }
+
+    .feature-delete {
       opacity: 0;
       background: none;
       border: none;
-      color: var(--dim);
+      color: var(--text-tertiary);
+      font-size: 14px;
       cursor: pointer;
-      font-size: 12px;
-      padding: 2px 4px;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      padding: 0 4px;
     }
-    .system-header:hover .system-edit-btn { opacity: 1; }
-    .system-edit-btn:hover { color: var(--blue); }
-    
-    .feature-name-input {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border);
-      border-radius: 6px; padding: 4px 8px; color: var(--text);
-      font-size: 13px; width: 100%;
+
+    .feature-row:hover .feature-delete {
+      opacity: 1;
     }
-    .feature-right { display: flex; align-items: center; gap: 10px; }
-    .feature-level { font-size: 10px; color: var(--dim); min-width: 24px; }
-    .level-dots { display: flex; gap: 3px; }
-    .level-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.2s;
+
+    .feature-delete:hover {
+      color: var(--red);
     }
-    .level-dot.filled { background: var(--blue); }
-    .level-dot:hover { transform: scale(1.3); }
-    .feature-delete {
-      background: none; border: none; color: var(--dim);
-      cursor: pointer; font-size: 16px; padding: 0 2px; transition: color 0.2s;
-      opacity: 0;
-    }
-    .feature:hover .feature-delete { opacity: 1; }
-    .feature-delete:hover { color: var(--red); }
 
     /* Add Feature */
-    .add-feature {
-      display: flex; gap: 8px; margin-top: 12px; padding-top: 12px;
+    .add-feature-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid var(--border);
     }
-    .add-feature input {
-      flex: 1; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 8px 10px; color: var(--text); font-size: 12px;
+
+    .add-feature-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 12px;
     }
-    .add-feature input:focus { outline: none; border-color: var(--blue); }
-    .add-feature button {
-      background: var(--blue); border: none; border-radius: 6px;
-      padding: 8px 12px; color: var(--text);
-      font-size: 12px; font-weight: 500; cursor: pointer;
+
+    .add-feature-input:focus {
+      outline: none;
+      border-color: var(--accent);
     }
-    .add-feature button:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; }
+
+    .add-feature-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-feature-btn:hover {
+      background: #0070E0;
+    }
+
+    .add-feature-btn:disabled {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+    }
 
     /* Delete System */
-    .delete-system {
-      margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
-      display: flex; justify-content: flex-end;
+    .delete-system-row {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
     }
-    .delete-system button {
-      background: none; border: 1px solid rgba(255,69,58,0.3);
-      border-radius: 6px; padding: 6px 10px;
-      color: rgba(255,69,58,0.6); font-size: 11px; cursor: pointer; transition: all 0.2s;
+
+    .delete-system-btn {
+      background: none;
+      border: 1px solid rgba(255,69,58,0.3);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: rgba(255,69,58,0.6);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .delete-system button:hover {
-      border-color: var(--red); color: var(--red); background: rgba(255,69,58,0.1);
+
+    .delete-system-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(255,69,58,0.1);
     }
 
     /* Add System Button */
     .add-system-btn {
-      background: var(--card); border: 2px dashed var(--border);
-      border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      color: var(--muted); font-size: 13px; font-weight: 500; width: 100%;
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    .add-system-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(10,132,255,0.05); }
 
-    /* G4: Command Palette */
-    .command-palette {
+    .add-system-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MODALS
+       ═══════════════════════════════════════════════════════════ */
+    .modal-overlay {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.8);
       backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.visible .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(85vh - 140px);
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-btn.secondary {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: var(--text);
+    }
+
+    .modal-btn.secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .modal-btn.primary {
+      background: var(--accent);
+      border: none;
+      color: white;
+    }
+
+    .modal-btn.primary:hover {
+      background: #0070E0;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Command Palette */
+    .command-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -1052,831 +1097,553 @@
       z-index: 2000;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
-    .command-palette.visible {
+
+    .command-overlay.visible {
       opacity: 1;
       visibility: visible;
     }
-    .command-palette-box {
-      background: #1c1c1e;
+
+    .command-box {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 12px;
       width: 90%;
       max-width: 500px;
       overflow: hidden;
-      transform: translateY(-10px);
-      transition: transform 0.2s;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     }
-    .command-palette.visible .command-palette-box {
-      transform: translateY(0);
-    }
-    .command-input-wrapper {
+
+    .command-input-wrap {
       display: flex;
       align-items: center;
-      padding: 16px;
+      padding: 14px 16px;
+      gap: 10px;
       border-bottom: 1px solid var(--border);
-      gap: 12px;
     }
+
     .command-input-icon {
-      color: var(--muted);
-      font-size: 16px;
+      color: var(--text-tertiary);
+      font-size: 14px;
     }
+
     .command-input {
       flex: 1;
       background: none;
       border: none;
       color: var(--text);
-      font-size: 16px;
+      font-size: 15px;
       outline: none;
     }
+
     .command-input::placeholder {
-      color: var(--dim);
+      color: var(--text-tertiary);
     }
-    .command-shortcut {
-      font-size: 11px;
-      color: var(--dim);
-      background: rgba(255,255,255,0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
+
     .command-results {
       max-height: 300px;
       overflow-y: auto;
     }
+
+    .command-group {
+      padding: 8px 0;
+    }
+
     .command-group-label {
       font-size: 10px;
-      color: var(--muted);
+      color: var(--text-tertiary);
       text-transform: uppercase;
       letter-spacing: 1px;
-      padding: 12px 16px 6px;
+      padding: 4px 16px 8px;
     }
+
     .command-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       cursor: pointer;
       transition: background 0.1s;
     }
+
     .command-item:hover,
     .command-item.selected {
       background: rgba(255,255,255,0.05);
     }
+
     .command-item-icon {
-      font-size: 16px;
-      width: 24px;
+      font-size: 14px;
+      width: 20px;
       text-align: center;
     }
+
     .command-item-text {
       flex: 1;
-      font-size: 14px;
+      font-size: 13px;
     }
+
     .command-item-hint {
       font-size: 11px;
-      color: var(--dim);
+      color: var(--text-tertiary);
     }
+
     .command-footer {
       padding: 10px 16px;
       border-top: 1px solid var(--border);
-      font-size: 11px;
-      color: var(--dim);
       display: flex;
       gap: 16px;
+      font-size: 11px;
+      color: var(--text-tertiary);
     }
-    .command-footer span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+
     .command-footer kbd {
       background: rgba(255,255,255,0.1);
       padding: 1px 5px;
       border-radius: 3px;
       font-family: monospace;
+      margin-right: 4px;
     }
-
-    /* G6: Empty/Initial States */
-    .empty-state {
-      text-align: center;
-      padding: 32px 20px;
-      color: var(--muted);
-    }
-    .empty-state-icon {
-      font-size: 32px;
-      margin-bottom: 12px;
-      opacity: 0.5;
-    }
-    .empty-state-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .empty-state-text {
-      font-size: 13px;
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-    .empty-state-btn {
-      background: var(--blue);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    /* Footer */
-    .footer {
-      margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .footer-text { font-size: 11px; color: var(--dim); }
-    .footer-btn {
-      background: none; border: 1px solid var(--border); border-radius: 6px;
-      padding: 6px 12px; color: var(--dim); font-size: 11px; cursor: pointer; transition: all 0.2s;
-    }
-    .footer-btn:hover { border-color: var(--blue); color: var(--blue); }
 
     /* Toast */
     .toast {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: rgba(50,50,50,0.95); color: var(--text);
-      padding: 12px 24px; border-radius: 12px;
-      font-size: 13px; font-weight: 500;
-      opacity: 0; transition: all 0.3s; pointer-events: none;
-      backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* Add System Modal */
-    .modal-grid { display: grid; gap: 16px; margin-bottom: 20px; }
-    .modal-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: block; }
-    .modal-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .modal-option {
-      padding: 12px 16px; border-radius: 12px;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--text); cursor: pointer; transition: all 0.2s;
-      text-align: left; font-size: 13px; display: flex; align-items: center; gap: 8px;
-    }
-    .modal-option:hover { border-color: var(--muted); }
-    .modal-option.selected { border-color: var(--blue); background: rgba(10,132,255,0.1); }
-    .modal-status-options { display: flex; gap: 8px; }
-    .modal-status-btn {
-      flex: 1; padding: 10px; border-radius: 10px;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 500;
-      text-transform: capitalize; transition: all 0.2s;
-    }
-    .modal-status-btn.selected { border-width: 2px; }
-    .modal-status-btn.selected.running { border-color: var(--green); color: var(--green); }
-    .modal-status-btn.selected.rework { border-color: var(--orange); color: var(--orange); }
-    .modal-status-btn.selected.struggle { border-color: var(--red); color: var(--red); }
-    .modal-status-btn.selected.backlog { border-color: var(--gray); color: var(--gray); }
-    .modal-footer { display: flex; gap: 12px; }
-    .modal-footer .modal-btn { flex: 1; }
-    .modal-footer .modal-btn.secondary { background: rgba(255,255,255,0.1); }
-
-    /* Weekly Review Modal */
-    .review-progress { display: flex; gap: 8px; margin-bottom: 24px; }
-    .review-step { flex: 1; height: 3px; border-radius: 2px; background: var(--border); }
-    .review-step.active { background: var(--blue); }
-    .review-textarea {
-      width: 100%; height: 80px; background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px; color: var(--text); font-size: 14px; resize: none;
-    }
-    .review-textarea:focus { outline: none; border-color: var(--blue); }
-    .review-scale { display: flex; gap: 8px; margin: 16px 0; }
-    .review-scale-btn {
-      flex: 1; padding: 16px 0; border-radius: 12px; border: none;
-      background: rgba(255,255,255,0.05); font-size: 20px; cursor: pointer; transition: all 0.2s;
-    }
-    .review-scale-btn.selected { background: var(--blue); }
-    .review-scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); }
-    .review-systems { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; max-height: 300px; overflow-y: auto; }
-    .review-system-btn {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px; border-radius: 12px;
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--text); cursor: pointer; text-align: left; font-size: 14px;
-    }
-    .review-system-btn.selected { border: 2px solid var(--blue); background: rgba(10,132,255,0.1); }
-    .review-summary { display: flex; flex-direction: column; gap: 16px; }
-    .review-summary-card { background: var(--card); border-radius: 12px; padding: 16px; }
-    .review-summary-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .review-summary-value { font-size: 16px; }
-    .review-summary-row { display: flex; gap: 16px; }
-    .review-summary-row > div { flex: 1; text-align: center; }
-    .review-focus-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .review-focus-tag { background: rgba(10,132,255,0.2); color: var(--blue); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
-    .review-priority-box {
-      background: linear-gradient(135deg, rgba(10,132,255,0.2), rgba(94,92,230,0.2));
-      border-radius: 12px; padding: 16px;
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 13px;
+      z-index: 3000;
+      opacity: 0;
+      transition: all 0.3s;
     }
 
-    /* Responsive */
-    @media (max-width: 700px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      .stat-value { font-size: 24px; }
-      .header-title { font-size: 28px; }
-      .header-actions { position: static; justify-content: center; margin-top: 16px; }
-      .modal-options { grid-template-columns: 1fr; }
+    .toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
+
+    /* ═══════════════════════════════════════════════════════════
+       SETUP SCREEN
+       ═══════════════════════════════════════════════════════════ */
+    .setup {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .setup-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .setup-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .setup-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .setup-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .setup-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .setup-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .setup-btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .setup-btn:hover {
+      background: #0070E0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .content-header {
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        max-width: 100%;
+        order: -1;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       UTILITIES
+       ═══════════════════════════════════════════════════════════ */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Setup Modal -->
-    <div class="modal" id="setupModal">
-      <div class="modal-content">
-        <div class="modal-title">Life OS verbinden</div>
-        <div class="modal-subtitle">Füge deine Apps Script URL ein</div>
-        <input type="text" class="modal-input" id="apiUrl" placeholder="https://script.google.com/macros/s/...">
-        <button class="modal-btn" id="connectBtn" onclick="connect()">Verbinden</button>
-        <div class="modal-hint">
-          <strong>Setup-Anleitung:</strong><br>
-          1. Öffne dein Google Sheet<br>
-          2. Extensions → Apps Script<br>
-          3. Füge den Code ein → Speichern<br>
-          4. Deploy → New deployment → Web app<br>
-          5. Execute as: Me | Access: Anyone<br>
-          6. Kopiere die URL hierher
+  <div class="app">
+    <!-- SETUP SCREEN -->
+    <div class="setup" id="setup">
+      <div class="setup-card">
+        <div class="setup-icon">◎</div>
+        <div class="setup-title">Life OS Setup</div>
+        <div class="setup-text">
+          Enter your Google Apps Script URL to connect your dashboard with Google Sheets.
         </div>
+        <input type="text" class="setup-input" id="apiInput" placeholder="https://script.google.com/...">
+        <button class="setup-btn" onclick="saveApiUrl()">Connect</button>
       </div>
     </div>
 
-    <!-- Add System Modal -->
-    <div class="modal hidden" id="addSystemModal">
-      <div class="modal-content">
-        <div class="modal-title">Neues System</div>
-        <div class="modal-subtitle">Erweitere dein Life OS</div>
-        <div class="modal-grid">
-          <div>
-            <label class="modal-label">Name</label>
-            <input type="text" class="modal-input" id="newSystemName" placeholder="z.B. Side Project, Meditation...">
-          </div>
-          <div>
-            <label class="modal-label">Kategorie</label>
-            <div class="modal-options" id="categoryOptions"></div>
-          </div>
-          <div>
-            <label class="modal-label">Status</label>
-            <div class="modal-status-options" id="statusOptions"></div>
-          </div>
+    <!-- MAIN APP -->
+    <div class="app-main hidden" id="appMain">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-logo"><span>◎</span> Life OS</div>
+          <div class="topbar-time" id="topbarTime"></div>
         </div>
-        <div class="modal-footer">
-          <button class="modal-btn secondary" onclick="closeAddSystemModal()">Abbrechen</button>
-          <button class="modal-btn" onclick="createSystem()">Erstellen</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Weekly Review Modal -->
-    <div class="modal hidden" id="reviewModal">
-      <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-          <div>
-            <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Weekly Review</div>
-            <div class="modal-title" id="reviewStepTitle">Rückblick</div>
-            <div class="modal-subtitle" id="reviewStepSubtitle">Was ist diese Woche passiert?</div>
-          </div>
-          <button onclick="closeReviewModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 32px; height: 32px; color: var(--muted); cursor: pointer; font-size: 18px;">×</button>
-        </div>
-        <div class="review-progress" id="reviewProgress"></div>
-        <div id="reviewContent"></div>
-        <div class="modal-footer" style="margin-top: 24px;">
-          <button class="modal-btn secondary" id="reviewBackBtn" onclick="reviewBack()" style="display: none;">Zurück</button>
-          <button class="modal-btn" id="reviewNextBtn" onclick="reviewNext()">Weiter</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div class="loading" id="loading" style="display: none;">
-      <div class="spinner"></div>
-      <div>Lade Daten...</div>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard" style="display: none;">
-      <div class="header">
-        <div class="header-left">
-          <h1 class="header-title">Life OS</h1>
-          <div class="header-meta" id="lastUpdated"></div>
-        </div>
-        <div class="header-right">
-          <div class="header-version">v1.6.1</div>
-          <button class="header-btn-small" onclick="loadData()" title="Refresh">↻</button>
-          <button class="header-btn-small" onclick="openReviewModal()" title="Weekly Review">📋</button>
+        <div class="topbar-actions">
+          <button class="topbar-btn" onclick="loadData()" title="Refresh (R)">↻</button>
+          <button class="topbar-btn" onclick="openCommandPalette()" title="Commands (⌘K)">⌘</button>
+          <button class="topbar-btn primary" onclick="openReviewModal()">Review</button>
         </div>
       </div>
 
-      <!-- North Star Mobile Only -->
-      <div class="north-star north-star-mobile" id="northStarMobile" onclick="editNorthStar()">
-        <div class="north-star-label">★ North Star</div>
-        <div class="north-star-text" id="northStarTextMobile"></div>
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- SIDEBAR -->
+      <!-- Main Layout -->
+      <div class="main">
+        <!-- Sidebar -->
         <div class="sidebar">
-          <!-- North Star Desktop -->
-          <div class="north-star north-star-desktop" id="northStarDesktop" onclick="editNorthStar()">
-            <div class="north-star-label">★ North Star</div>
-            <div class="north-star-text" id="northStarTextDesktop"></div>
-          </div>
-
-          <!-- Quarterly Goals (Phase 5) -->
-          <div class="quarterly-goals" id="quarterlyGoals">
-            <div class="quarterly-header">
-              <div class="quarterly-label">◆ Q Goals</div>
-              <div class="quarterly-period" id="quarterlyPeriod"></div>
-            </div>
-            <div class="quarterly-list" id="quarterlyList"></div>
-          </div>
-
-          <!-- WEEKLY FOCUS (Phase 2) -->
-          <div class="weekly-focus" id="weeklyFocus" style="display: none;">
-            <div class="weekly-focus-label">⚡ This Week</div>
-            <div class="weekly-focus-systems" id="focusSystems"></div>
-          </div>
-
-          <!-- Progress + Momentum compact -->
-          <div class="progress-momentum-compact">
-            <div class="ring-wrapper-small">
-              <svg class="ring" width="80" height="80">
-                <circle class="ring-bg" cx="40" cy="40" r="34"></circle>
-                <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"></circle>
-              </svg>
-              <div class="ring-text">
-                <div class="ring-value-small" id="overallProgress">0%</div>
+          <div class="sidebar-scroll">
+            <!-- North Star -->
+            <div class="sidebar-section">
+              <div class="section-label">★ North Star</div>
+              <div class="north-star-card" onclick="editNorthStar()">
+                <div class="north-star-text" id="northStarText">Define your purpose...</div>
               </div>
             </div>
-            <div class="momentum-compact" id="momentumCard"></div>
-          </div>
 
-          <!-- ATTENTION QUEUE (Phase 2) -->
-          <div class="attention-queue hidden" id="attentionQueue">
-            <div class="attention-queue-label">⚠️ Attention</div>
-            <div id="attentionItems"></div>
-          </div>
+            <!-- Quarterly Goals -->
+            <div class="sidebar-section">
+              <div class="section-label">◆ Q<span id="currentQuarter">1</span> Goals</div>
+              <div id="goalsList"></div>
+            </div>
 
-          <!-- Stats compact -->
-          <div class="stats-compact">
-            <div class="stat-mini"><span class="stat-mini-value" id="statSystems">0</span> systems</div>
-            <div class="stat-mini"><span class="stat-mini-value" id="statFeatures">0</span> features</div>
-            <div class="stat-mini" style="color: var(--orange);"><span class="stat-mini-value" id="statNeedWork">0</span> need work</div>
+            <!-- Progress -->
+            <div class="sidebar-section">
+              <div class="section-label">Progress</div>
+              <div class="progress-card">
+                <div class="progress-ring-wrap">
+                  <svg class="progress-ring" width="64" height="64">
+                    <circle class="progress-ring-bg" cx="32" cy="32" r="26"></circle>
+                    <circle class="progress-ring-fill" id="progressRing" cx="32" cy="32" r="26" 
+                      stroke-dasharray="163.4" stroke-dashoffset="163.4"></circle>
+                  </svg>
+                  <div class="progress-value" id="progressValue">0%</div>
+                </div>
+                <div class="progress-info">
+                  <div class="progress-label">vs. last week</div>
+                  <div class="progress-delta neutral" id="progressDelta">–</div>
+                  <div class="progress-sub" id="progressSub">Complete a weekly review</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weekly Focus -->
+            <div class="sidebar-section" id="focusSection" style="display: none;">
+              <div class="section-label">⚡ This Week</div>
+              <div id="focusList"></div>
+            </div>
+
+            <!-- Attention -->
+            <div class="sidebar-section attention-section" id="attentionSection" style="display: none;">
+              <div class="section-label">⚠ Attention</div>
+              <div id="attentionList"></div>
+            </div>
+
+            <!-- Stats -->
+            <div class="sidebar-section">
+              <div class="section-label">Overview</div>
+              <div class="stats-row">
+                <div class="stat-chip">
+                  <div class="stat-value" id="statSystems">0</div>
+                  <div class="stat-label">Systems</div>
+                </div>
+                <div class="stat-chip">
+                  <div class="stat-value" id="statFeatures">0</div>
+                  <div class="stat-label">Features</div>
+                </div>
+                <div class="stat-chip">
+                  <div class="stat-value" id="statActive">0</div>
+                  <div class="stat-label">Active</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-          <!-- Search -->
-          <div class="search-bar">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="searchInput" placeholder="Search..." onkeyup="handleSearch(event)">
-            <span class="search-shortcut">/</span>
+        <!-- Content -->
+        <div class="content">
+          <div class="content-header">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="searchInput" 
+                placeholder="Search systems..." onkeyup="handleSearch(event)">
+              <span class="search-hint">/</span>
+            </div>
+            <div class="filters" id="filters"></div>
           </div>
 
-          <div class="filters" id="filters"></div>
-
-          <div class="systems" id="systemsList"></div>
-          
-          <button class="add-system-btn" onclick="openAddSystemModal()">+ Add System</button>
+          <div class="content-scroll">
+            <div class="systems-grid" id="systemsList"></div>
+            <button class="add-system-btn" onclick="openAddSystemModal()">+ Add System</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
-
-  <!-- G4: Command Palette -->
-  <div class="command-palette" id="commandPalette" onclick="if(event.target === this) closeCommandPalette()">
-    <div class="command-palette-box">
-      <div class="command-input-wrapper">
+  <!-- Command Palette -->
+  <div class="command-overlay" id="commandOverlay" onclick="if(event.target===this)closeCommandPalette()">
+    <div class="command-box">
+      <div class="command-input-wrap">
         <span class="command-input-icon">⌘</span>
-        <input type="text" class="command-input" id="commandInput" placeholder="Type a command or search..." onkeyup="handleCommandInput(event)" onkeydown="handleCommandKeydown(event)">
-        <span class="command-shortcut">ESC</span>
+        <input type="text" class="command-input" id="commandInput" 
+          placeholder="Type a command..." onkeyup="handleCommandInput(event)" onkeydown="handleCommandKeydown(event)">
       </div>
       <div class="command-results" id="commandResults"></div>
       <div class="command-footer">
         <span><kbd>↑↓</kbd> Navigate</span>
         <span><kbd>↵</kbd> Select</span>
-        <span><kbd>ESC</kbd> Close</span>
+        <span><kbd>esc</kbd> Close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Add System Modal -->
+  <div class="modal-overlay" id="addSystemModal" onclick="if(event.target===this)closeModal('addSystemModal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add System</div>
+        <button class="modal-close" onclick="closeModal('addSystemModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="newSystemName" placeholder="e.g., Morning Routine">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="newSystemCategory">
+            <option value="Health">🏃 Health</option>
+            <option value="Finance">💰 Finance</option>
+            <option value="Productivity">⚡ Productivity</option>
+            <option value="Assets">🏠 Assets</option>
+            <option value="Growth">📚 Growth</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeModal('addSystemModal')">Cancel</button>
+        <button class="modal-btn primary" onclick="addSystem()">Add System</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Review Modal -->
+  <div class="modal-overlay" id="reviewModal" onclick="if(event.target===this)closeModal('reviewModal')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Weekly Review</div>
+        <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">🏆 This week's wins</label>
+          <textarea class="form-textarea" id="reviewWins" placeholder="What went well?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔧 Struggles</label>
+          <textarea class="form-textarea" id="reviewStruggles" placeholder="What was challenging?"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚡ Energy level (1-10)</label>
+          <input type="number" class="form-input" id="reviewEnergy" min="1" max="10" placeholder="7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🎯 Next week's focus (3 systems)</label>
+          <select class="form-select" id="reviewFocus1"><option value="">Select system...</option></select>
+          <select class="form-select" id="reviewFocus2" style="margin-top:8px"><option value="">Select system...</option></select>
+          <select class="form-select" id="reviewFocus3" style="margin-top:8px"><option value="">Select system...</option></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn secondary" onclick="closeModal('reviewModal')">Cancel</button>
+        <button class="modal-btn primary" onclick="submitReview()">Save Review</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     // STATE
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     let API_URL = localStorage.getItem('lifeOsApiUrl') || '';
-    let data = { systems: [], features: [], config: {} };
-    let selectedCategory = 'all';
+    let data = { systems: [], features: [] };
     let expandedSystems = new Set();
-    let newSystemCategory = '';
-    let newSystemStatus = 'Backlog';
-    let reviewStep = 0;
-    let reviewData = { wins: '', struggles: '', energy: 3, clarity: 3, focusSystems: [], priority: '' };
+    let selectedCategory = 'all';
+    let searchQuery = '';
 
     const categoryIcons = {
-      'Health & Vitality': '♥',
-      'Finance & Wealth': '◆',
-      'Productivity': '⚡',
-      'Assets & Admin': '□',
-      'Growth & Learning': '↑'
+      Health: '🏃', Finance: '💰', Productivity: '⚡', Assets: '🏠', Growth: '📚'
     };
-
-    const statusColors = {
-      'Running': { bg: 'rgba(52,199,89,0.15)', color: '#32D74B' },
-      'Rework': { bg: 'rgba(255,159,10,0.15)', color: '#FF9F0A' },
-      'Struggle': { bg: 'rgba(255,69,58,0.15)', color: '#FF453A' },
-      'Backlog': { bg: 'rgba(142,142,147,0.15)', color: '#8E8E93' }
+    const categoryColors = {
+      Health: '#30D158', Finance: '#FFD60A', Productivity: '#0A84FF', Assets: '#FF9F0A', Growth: '#BF5AF2'
     };
-
     const statusOrder = ['Running', 'Rework', 'Struggle', 'Backlog'];
 
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     // INIT
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     function init() {
       if (API_URL) {
-        document.getElementById('setupModal').classList.add('hidden');
+        document.getElementById('setup').classList.add('hidden');
+        document.getElementById('appMain').classList.remove('hidden');
         loadData();
+        updateTime();
+        setInterval(updateTime, 60000);
+        renderNorthStar();
+        renderQuarterlyGoals();
       }
     }
 
-    function connect() {
-      const url = document.getElementById('apiUrl').value.trim();
-      if (url.includes('script.google.com')) {
-        API_URL = url;
-        localStorage.setItem('lifeOsApiUrl', API_URL);
-        document.getElementById('setupModal').classList.add('hidden');
-        loadData();
-      } else {
-        alert('Bitte eine gültige Apps Script URL eingeben.');
-      }
+    function updateTime() {
+      document.getElementById('topbarTime').textContent = 
+        new Date().toLocaleString('de-DE', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
     }
 
-    function resetConnection() {
-      if (confirm('Verbindung zurücksetzen?')) {
-        localStorage.removeItem('lifeOsApiUrl');
-        location.reload();
-      }
+    function saveApiUrl() {
+      const url = document.getElementById('apiInput').value.trim();
+      if (!url) return toast('Please enter a URL');
+      localStorage.setItem('lifeOsApiUrl', url);
+      API_URL = url;
+      init();
     }
 
-    // ============================================
-    // API CALLS
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
+    // API
+    // ═══════════════════════════════════════════════════════════
     async function loadData() {
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('dashboard').style.display = 'none';
-
       try {
-        const response = await fetch(API_URL);
-        const result = await response.json();
-        if (result.success) {
-          data = result.data;
-          render();
-        } else {
-          throw new Error(result.error);
-        }
-      } catch (error) {
-        console.error(error);
-        toast('Fehler beim Laden: ' + error.message);
-        document.getElementById('setupModal').classList.remove('hidden');
+        const res = await fetch(API_URL);
+        data = await res.json();
+        render();
+      } catch (e) {
+        toast('Load failed: ' + e.message);
       }
-
-      document.getElementById('loading').style.display = 'none';
     }
 
     async function apiPost(payload) {
       try {
-        const response = await fetch(API_URL, {
+        const res = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        const result = await response.json();
+        const result = await res.json();
         if (result.success) {
-          toast('Gespeichert ✓');
+          toast('Saved ✓');
           loadData();
         } else {
           throw new Error(result.error);
         }
-      } catch (error) {
-        console.error(error);
-        toast('Fehler: ' + error.message);
+      } catch (e) {
+        toast('Error: ' + e.message);
       }
     }
 
-    // B3: Silent API post - no loading state, no reload, returns promise
-    async function apiPostSilent(payload) {
-      const response = await fetch(API_URL, {
+    // Silent API - no reload, for optimistic updates
+    async function apiSilent(payload) {
+      const res = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Sync failed');
-      }
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error);
       return result;
     }
 
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     // RENDER
-    // ============================================
+    // ═══════════════════════════════════════════════════════════
     function render() {
-      document.getElementById('dashboard').style.display = 'block';
+      renderStats();
+      renderFilters();
+      renderSystems();
+      renderProgress();
+      renderFocus();
+      renderAttention();
+    }
 
-      // Calculate stats
+    function renderStats() {
       const systems = data.systems;
       const features = data.features;
-      const running = systems.filter(s => s.Status === 'Running').length;
-      const active = features.filter(f => f.Status === 'Active').length;
-      const needWork = systems.filter(s => s.Status === 'Struggle' || s.Status === 'Rework').length;
-      const backlog = systems.filter(s => s.Status === 'Backlog').length;
-      const avgProgress = features.length > 0 
-        ? Math.round(features.reduce((sum, f) => sum + (f.Level / 5), 0) / features.length * 100)
-        : 0;
-
-      // Update stats (with null checks for compact layout)
-      const el = (id) => document.getElementById(id);
-      if (el('statSystems')) el('statSystems').textContent = systems.length;
-      if (el('statRunning')) el('statRunning').textContent = running + ' running';
-      if (el('statFeatures')) el('statFeatures').textContent = features.length;
-      if (el('statActive')) el('statActive').textContent = active + ' active';
-      if (el('statNeedWork')) el('statNeedWork').textContent = needWork;
-      if (el('statBacklog')) el('statBacklog').textContent = backlog;
-      if (el('overallProgress')) el('overallProgress').textContent = avgProgress + '%';
-      if (el('lastUpdated')) el('lastUpdated').textContent = new Date().toLocaleString('de-DE', { hour: '2-digit', minute: '2-digit' });
-
-      // Progress ring (r=34, circumference = 2*PI*34 = 213.6)
-      const circumference = 2 * Math.PI * 34;
-      document.getElementById('ringFill').style.strokeDashoffset = circumference - (avgProgress / 100) * circumference;
-
-      // Render Momentum (Phase 3)
-      renderMomentum(avgProgress);
-
-      // Render Weekly Focus (Phase 2)
-      renderWeeklyFocus();
-
-      // Render Attention Queue (Phase 2)
-      renderAttentionQueue();
-
-      // Filters
-      renderFilters();
-
-      // Systems
-      renderSystems();
-    }
-
-    // Weekly Focus (Phase 2)
-    function renderWeeklyFocus() {
-      const focusSystemIds = [];
-      
-      // Get focus systems from localStorage (saved from weekly review)
-      const savedFocus = localStorage.getItem('lifeOsWeeklyFocus');
-      if (savedFocus) {
-        try {
-          const parsed = JSON.parse(savedFocus);
-          // Check if it's from this week (within 7 days)
-          const savedDate = new Date(parsed.date);
-          const now = new Date();
-          const daysDiff = (now - savedDate) / (1000 * 60 * 60 * 24);
-          if (daysDiff <= 7) {
-            focusSystemIds.push(...parsed.systems);
-          }
-        } catch (e) {}
-      }
-
-      if (focusSystemIds.length === 0) {
-        document.getElementById('weeklyFocus').style.display = 'none';
-        return;
-      }
-
-      document.getElementById('weeklyFocus').style.display = 'block';
-      
-      const focusHtml = focusSystemIds.map(sysId => {
-        const system = data.systems.find(s => s.ID === sysId);
-        if (!system) return '';
-        
-        const sysFeatures = data.features.filter(f => f.SystemID === sysId);
-        const progress = sysFeatures.length > 0
-          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
-          : 0;
-        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
-        const statusStyle = statusColors[system.Status] || statusColors['Backlog'];
-
-        return `
-          <div class="focus-system-card">
-            <div class="focus-system-name">${system.Name}</div>
-            <div class="focus-system-progress">
-              <div class="focus-system-progress-fill" style="width: ${progress}%; background: ${statusStyle.color}"></div>
-            </div>
-            <div class="focus-system-meta">
-              <span>${activeCount}/${sysFeatures.length} active</span>
-              <span style="color: ${statusStyle.color}">${progress}%</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('focusSystems').innerHTML = focusHtml;
-    }
-
-    // Attention Queue (Phase 2)
-    function renderAttentionQueue() {
-      const attentionSystems = [];
-
-      data.systems.forEach(system => {
-        const sysFeatures = data.features.filter(f => f.SystemID === system.ID);
-        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
-        const progress = sysFeatures.length > 0
-          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
-          : 0;
-
-        let reason = null;
-        let priority = 99;
-
-        if (system.Status === 'Struggle') {
-          reason = 'Status: Struggle';
-          priority = 1;
-        } else if (system.Status === 'Rework') {
-          reason = 'Status: Rework';
-          priority = 2;
-        } else if (activeCount === 0 && sysFeatures.length > 0) {
-          reason = 'Keine aktiven Features';
-          priority = 3;
-        } else if (progress < 20 && system.Status !== 'Backlog') {
-          reason = 'Fortschritt unter 20%';
-          priority = 4;
-        }
-
-        if (reason) {
-          attentionSystems.push({ system, reason, priority, progress });
-        }
-      });
-
-      // Sort by priority
-      attentionSystems.sort((a, b) => a.priority - b.priority);
-
-      const container = document.getElementById('attentionQueue');
-      
-      if (attentionSystems.length === 0) {
-        container.classList.add('hidden');
-        return;
-      }
-
-      container.classList.remove('hidden');
-      
-      const html = attentionSystems.slice(0, 5).map((item, idx) => `
-        <div class="attention-item">
-          <div class="attention-rank">#${idx + 1}</div>
-          <div class="attention-info">
-            <div class="attention-name">${item.system.Name}</div>
-            <div class="attention-reason">${item.reason} · ${item.progress}% complete</div>
-          </div>
-          <div class="attention-action" onclick="expandAndScroll('${item.system.ID}')">→ View</div>
-        </div>
-      `).join('');
-
-      document.getElementById('attentionItems').innerHTML = html;
-    }
-
-    function expandAndScroll(systemId) {
-      expandedSystems.add(systemId);
-      renderSystems();
-      setTimeout(() => {
-        document.querySelector(`.system[data-id="${systemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    }
-
-    // Momentum (Phase 3)
-    function renderMomentum(currentProgress) {
-      const card = document.getElementById('momentumCard');
-      
-      // Get progress history from localStorage
-      let history = [];
-      try {
-        history = JSON.parse(localStorage.getItem('lifeOsProgressHistory') || '[]');
-      } catch (e) {}
-
-      // Save today's progress (max once per day)
-      const today = new Date().toISOString().split('T')[0];
-      const lastEntry = history[history.length - 1];
-      if (!lastEntry || lastEntry.date !== today) {
-        history.push({ date: today, progress: currentProgress });
-        // Keep last 8 weeks (56 days max)
-        if (history.length > 56) history = history.slice(-56);
-        localStorage.setItem('lifeOsProgressHistory', JSON.stringify(history));
-      } else {
-        // Update today's entry
-        lastEntry.progress = currentProgress;
-        localStorage.setItem('lifeOsProgressHistory', JSON.stringify(history));
-      }
-
-      // Get weekly snapshots (last 8 weeks)
-      const weeklyData = getWeeklySnapshots(history);
-
-      if (weeklyData.length < 2) {
-        card.innerHTML = `
-          <div class="empty-state" style="padding: 16px;">
-            <div class="empty-state-icon">📈</div>
-            <div class="empty-state-title">Momentum Tracking</div>
-            <div class="empty-state-text">Complete your first Weekly Review to see your progress trend</div>
-          </div>
-        `;
-        return;
-      }
-
-      // Calculate delta vs last week
-      const current = weeklyData[weeklyData.length - 1];
-      const previous = weeklyData[weeklyData.length - 2];
-      const delta = current - previous;
-      const deltaClass = delta > 1 ? 'positive' : delta < -1 ? 'negative' : 'neutral';
-      const deltaSign = delta > 0 ? '+' : '';
-      const deltaArrow = delta > 1 ? '↑' : delta < -1 ? '↓' : '→';
-
-      // Calculate velocity (avg change per week over last 4 weeks)
-      let velocity = 0;
-      let velocityTrend = 'neutral';
-      if (weeklyData.length >= 3) {
-        const recentChanges = [];
-        for (let i = 1; i < weeklyData.length; i++) {
-          recentChanges.push(weeklyData[i] - weeklyData[i-1]);
-        }
-        velocity = recentChanges.reduce((a, b) => a + b, 0) / recentChanges.length;
-        
-        // Compare recent velocity to older velocity
-        if (recentChanges.length >= 4) {
-          const recentAvg = (recentChanges.slice(-2).reduce((a, b) => a + b, 0)) / 2;
-          const olderAvg = (recentChanges.slice(0, 2).reduce((a, b) => a + b, 0)) / 2;
-          if (recentAvg > olderAvg + 0.5) velocityTrend = 'positive';
-          else if (recentAvg < olderAvg - 0.5) velocityTrend = 'negative';
-        }
-      }
-
-      // Build sparkline
-      const maxProgress = Math.max(...weeklyData, 1);
-      const sparklineBars = weeklyData.map((val, idx) => {
-        const height = Math.max((val / 100) * 40, 4);
-        const isCurrent = idx === weeklyData.length - 1;
-        return `<div class="sparkline-bar ${isCurrent ? 'current' : ''}" style="height: ${height}px" title="Week ${idx + 1}: ${val}%"></div>`;
-      }).join('');
-
-      card.innerHTML = `
-        <div class="momentum-label">Momentum</div>
-        <div class="momentum-delta ${deltaClass}">
-          ${deltaSign}${delta}% ${deltaArrow}
-          <span class="momentum-delta-sub">vs. last week</span>
-        </div>
-        <div class="momentum-sparkline">
-          ${sparklineBars}
-        </div>
-        <div class="momentum-velocity">
-          <span class="velocity-value">${velocity >= 0 ? '+' : ''}${velocity.toFixed(1)}%/week</span>
-          <span class="velocity-trend ${velocityTrend}">${velocityTrend === 'positive' ? '↑ Accelerating' : velocityTrend === 'negative' ? '↓ Slowing' : '→ Steady'}</span>
-        </div>
-      `;
-    }
-
-    function getWeeklySnapshots(history) {
-      if (history.length === 0) return [];
-      
-      const weeks = [];
-      const now = new Date();
-      
-      // Get data for each of the last 8 weeks
-      for (let w = 7; w >= 0; w--) {
-        const weekEnd = new Date(now);
-        weekEnd.setDate(weekEnd.getDate() - (w * 7));
-        const weekStart = new Date(weekEnd);
-        weekStart.setDate(weekStart.getDate() - 7);
-        
-        // Find the latest entry in this week
-        const weekEntries = history.filter(h => {
-          const d = new Date(h.date);
-          return d >= weekStart && d <= weekEnd;
-        });
-        
-        if (weekEntries.length > 0) {
-          weeks.push(weekEntries[weekEntries.length - 1].progress);
-        }
-      }
-      
-      return weeks;
+      document.getElementById('statSystems').textContent = systems.length;
+      document.getElementById('statFeatures').textContent = features.length;
+      document.getElementById('statActive').textContent = features.filter(f => f.Status === 'Active').length;
     }
 
     function renderFilters() {
       const categories = ['all', ...new Set(data.systems.map(s => s.Category))];
-      document.getElementById('filters').innerHTML = categories.map(cat => `
-        <button class="filter-btn ${selectedCategory === cat ? 'active' : ''}" onclick="setFilter('${cat}')">
-          ${cat === 'all' ? 'All Systems' : (categoryIcons[cat] || '') + ' ' + cat}
+      document.getElementById('filters').innerHTML = categories.map(c => `
+        <button class="filter-btn ${selectedCategory === c ? 'active' : ''}" onclick="setFilter('${c}')">
+          ${c === 'all' ? 'All' : (categoryIcons[c] || '') + ' ' + c}
         </button>
       `).join('');
     }
@@ -1889,11 +1656,11 @@
 
     function renderSystems() {
       let systems = data.systems;
+      
       if (selectedCategory !== 'all') {
         systems = systems.filter(s => s.Category === selectedCategory);
       }
       
-      // Search filter
       if (searchQuery) {
         systems = systems.filter(s => {
           const nameMatch = s.Name.toLowerCase().includes(searchQuery);
@@ -1903,87 +1670,279 @@
           return nameMatch || featureMatch;
         });
       }
-      
+
       systems.sort((a, b) => (a.Priority || 99) - (b.Priority || 99));
 
-      const html = systems.map(system => {
-        const sysFeatures = data.features.filter(f => f.SystemID === system.ID);
-        const progress = sysFeatures.length > 0
-          ? Math.round(sysFeatures.reduce((sum, f) => sum + (f.Level / 5), 0) / sysFeatures.length * 100)
+      document.getElementById('systemsList').innerHTML = systems.map(s => {
+        const features = data.features.filter(f => f.SystemID === s.ID);
+        const activeFeatures = features.filter(f => f.Status === 'Active');
+        const progress = features.length > 0 
+          ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
           : 0;
-        const activeCount = sysFeatures.filter(f => f.Status === 'Active').length;
-        const statusStyle = statusColors[system.Status] || statusColors['Backlog'];
-        const icon = categoryIcons[system.Category] || '○';
-        const isExpanded = expandedSystems.has(system.ID);
+        const isExpanded = expandedSystems.has(s.ID);
+        const color = categoryColors[s.Category] || '#666';
 
         return `
-          <div class="system ${isExpanded ? 'expanded' : ''}" data-id="${system.ID}">
-            <div class="system-header" onclick="toggleSystem('${system.ID}')">
-              <div class="system-icon" style="background: linear-gradient(135deg, ${statusStyle.color}22, ${statusStyle.color}44)">${icon}</div>
+          <div class="system-card ${isExpanded ? 'expanded' : ''}" data-id="${s.ID}">
+            <div class="system-header" onclick="toggleSystem('${s.ID}')">
+              <div class="system-icon" style="background:${color}20; color:${color}">
+                ${categoryIcons[s.Category] || '○'}
+              </div>
               <div class="system-info">
-                <div class="system-title">
-                  <div class="system-name-wrapper">
-                    <span class="system-name">${system.Name}</span>
-                    <button class="system-edit-btn" onclick="editSystemName(event, '${system.ID}', '${system.Name}')" title="Edit name">✎</button>
-                  </div>
-                  <span class="badge badge-${system.Status.toLowerCase()}" onclick="cycleSystemStatus(event, '${system.ID}', '${system.Status}')">${system.Status}</span>
+                <div class="system-title-row">
+                  <span class="system-name">${s.Name}</span>
+                  <button class="system-edit-btn" onclick="editSystemName(event,'${s.ID}','${s.Name}')">✎</button>
                 </div>
-                <div class="system-meta">
-                  <span class="system-count">${activeCount}/${sysFeatures.length} Features</span>
-                  <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%; background: ${statusStyle.color}"></div></div>
-                  <span class="system-progress" style="color: ${statusStyle.color}">${progress}%</span>
+                <div class="system-meta-row">
+                  <span class="system-badge ${s.Status.toLowerCase()}" 
+                    onclick="cycleStatus(event,'${s.ID}','${s.Status}')">${s.Status}</span>
+                  <span class="system-feature-count">${activeFeatures.length}/${features.length}</span>
                 </div>
               </div>
+              <div class="system-progress-bar">
+                <div class="system-progress-fill" style="width:${progress}%; background:${color}"></div>
+              </div>
+              <div class="system-progress-text">${progress}%</div>
               <div class="system-chevron">▼</div>
             </div>
-            <div class="features">
-              <div style="padding-top: 16px;">
-                ${sysFeatures.map(f => renderFeature(f)).join('')}
+            <div class="system-features">
+              ${features.map(f => renderFeature(f)).join('')}
+              <div class="add-feature-row">
+                <input type="text" class="add-feature-input" id="input-${s.ID}" 
+                  placeholder="Add feature..." onkeydown="if(event.key==='Enter')addFeature('${s.ID}')">
+                <button class="add-feature-btn" onclick="addFeature('${s.ID}')">Add</button>
               </div>
-              <div class="add-feature">
-                <input type="text" placeholder="New feature name..." id="newFeature_${system.ID}" onkeydown="if(event.key==='Enter')addFeature('${system.ID}')">
-                <button onclick="addFeature('${system.ID}')">+ Add</button>
-              </div>
-              <div class="delete-system">
-                <button onclick="deleteSystem('${system.ID}', '${system.Name}')">System löschen</button>
+              <div class="delete-system-row">
+                <button class="delete-system-btn" onclick="deleteSystem('${s.ID}')">Delete System</button>
               </div>
             </div>
           </div>
         `;
       }).join('');
-
-      document.getElementById('systemsList').innerHTML = html + `
-        <button class="add-system-btn" onclick="openAddSystemModal()">
-          <span style="font-size: 20px">+</span> Neues System hinzufügen
-        </button>
-      `;
     }
 
     function renderFeature(f) {
       const isActive = f.Status === 'Active';
       return `
-        <div class="feature" data-id="${f.ID}">
-          <div class="feature-left">
-            <div class="feature-dot ${isActive ? 'active' : 'planned'}" onclick="toggleFeatureStatus('${f.ID}', '${f.Status}')" title="${isActive ? 'Active → Planned' : 'Planned → Active'}"></div>
-            <div class="feature-name-wrapper">
-              <span class="feature-name ${isActive ? '' : 'planned'}">${f.Name}</span>
-              <button class="feature-edit-btn" onclick="editFeatureName(event, '${f.ID}', '${f.Name}')" title="Edit name">✎</button>
-            </div>
+        <div class="feature-row" data-id="${f.ID}">
+          <div class="feature-status ${isActive ? 'active' : 'planned'}" 
+            onclick="toggleFeatureStatus('${f.ID}')" title="${isActive ? 'Active' : 'Planned'}"></div>
+          <div class="feature-name-wrap">
+            <span class="feature-name ${isActive ? '' : 'planned'}">${f.Name}</span>
+            <button class="feature-edit-btn" onclick="editFeatureName(event,'${f.ID}','${f.Name}')">✎</button>
           </div>
-          <div class="feature-right">
-            <span class="feature-level">LV ${f.Level}</span>
+          <div class="feature-level">
+            <span class="feature-level-text">Lv ${f.Level}</span>
             <div class="level-dots">
-              ${[0,1,2,3,4].map(i => `<div class="level-dot ${i < f.Level ? 'filled' : ''}" onclick="setFeatureLevel('${f.ID}', ${i + 1 === f.Level ? i : i + 1})" title="Level ${i + 1}"></div>`).join('')}
+              ${[1,2,3,4,5].map(i => `
+                <div class="level-dot ${i <= f.Level ? 'filled' : ''}" 
+                  onclick="setFeatureLevel('${f.ID}',${i})" title="Level ${i}"></div>
+              `).join('')}
             </div>
-            <button class="feature-delete" onclick="deleteFeature('${f.ID}')" title="Delete">×</button>
           </div>
+          <button class="feature-delete" onclick="deleteFeature('${f.ID}')">×</button>
         </div>
       `;
     }
 
-    // ============================================
-    // ACTIONS
-    // ============================================
+    function renderProgress() {
+      const features = data.features;
+      const progress = features.length > 0 
+        ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
+        : 0;
+
+      document.getElementById('progressValue').textContent = progress + '%';
+      
+      const circumference = 2 * Math.PI * 26;
+      document.getElementById('progressRing').style.strokeDashoffset = 
+        circumference - (progress / 100) * circumference;
+
+      // Momentum from history
+      let history = [];
+      try { history = JSON.parse(localStorage.getItem('lifeOsProgressHistory') || '[]'); } catch(e) {}
+      
+      const today = new Date().toISOString().split('T')[0];
+      const lastEntry = history[history.length - 1];
+      if (!lastEntry || lastEntry.date !== today) {
+        history.push({ date: today, progress });
+        if (history.length > 56) history = history.slice(-56);
+      } else {
+        lastEntry.progress = progress;
+      }
+      localStorage.setItem('lifeOsProgressHistory', JSON.stringify(history));
+
+      // Calculate delta
+      if (history.length >= 8) {
+        const weekAgo = history[history.length - 8]?.progress || progress;
+        const delta = progress - weekAgo;
+        const deltaEl = document.getElementById('progressDelta');
+        deltaEl.textContent = (delta >= 0 ? '+' : '') + delta + '%';
+        deltaEl.className = 'progress-delta ' + (delta > 0 ? 'positive' : delta < 0 ? 'negative' : 'neutral');
+        document.getElementById('progressSub').textContent = delta >= 0 ? 'Keep it up!' : 'Time to focus';
+      }
+    }
+
+    function renderFocus() {
+      const focus = JSON.parse(localStorage.getItem('lifeOsWeeklyFocus') || 'null');
+      const section = document.getElementById('focusSection');
+      
+      if (!focus || !focus.systems || focus.systems.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      // Check if expired (> 7 days)
+      const focusDate = new Date(focus.date);
+      const now = new Date();
+      if ((now - focusDate) / (1000*60*60*24) > 7) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      document.getElementById('focusList').innerHTML = focus.systems.map(id => {
+        const system = data.systems.find(s => s.ID === id);
+        if (!system) return '';
+        const features = data.features.filter(f => f.SystemID === id);
+        const progress = features.length > 0 
+          ? Math.round(features.reduce((sum, f) => sum + f.Level, 0) / (features.length * 5) * 100)
+          : 0;
+        return `
+          <div class="focus-item">
+            <span class="focus-icon">${categoryIcons[system.Category] || '○'}</span>
+            <span class="focus-name">${system.Name}</span>
+            <span class="focus-progress">${progress}%</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAttention() {
+      const section = document.getElementById('attentionSection');
+      const needs = data.systems.filter(s => 
+        s.Status === 'Struggle' || s.Status === 'Rework' ||
+        data.features.filter(f => f.SystemID === s.ID && f.Status === 'Active').length === 0
+      ).slice(0, 3);
+
+      if (needs.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      document.getElementById('attentionList').innerHTML = needs.map((s, i) => `
+        <div class="attention-item">
+          <span class="attention-rank">#${i + 1}</span>
+          <span class="attention-name">${s.Name}</span>
+          <span class="attention-badge">${s.Status}</span>
+        </div>
+      `).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // NORTH STAR
+    // ═══════════════════════════════════════════════════════════
+    function renderNorthStar() {
+      const saved = localStorage.getItem('lifeOsNorthStar') || '';
+      const el = document.getElementById('northStarText');
+      el.textContent = saved ? '"' + saved + '"' : 'Define your purpose...';
+      el.classList.toggle('empty', !saved);
+    }
+
+    function editNorthStar() {
+      const current = localStorage.getItem('lifeOsNorthStar') || '';
+      const newValue = prompt('Your North Star – Why are you doing all this?', current);
+      if (newValue !== null) {
+        localStorage.setItem('lifeOsNorthStar', newValue.trim());
+        renderNorthStar();
+        toast('North Star saved');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // QUARTERLY GOALS
+    // ═══════════════════════════════════════════════════════════
+    function renderQuarterlyGoals() {
+      const quarter = Math.floor(new Date().getMonth() / 3) + 1;
+      const year = new Date().getFullYear();
+      const key = `${year}-Q${quarter}`;
+      
+      document.getElementById('currentQuarter').textContent = quarter;
+      
+      let goals = [];
+      try {
+        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]')
+          .filter(g => g.quarter === key);
+      } catch(e) {}
+
+      document.getElementById('goalsList').innerHTML = goals.length > 0
+        ? goals.map((g, i) => `
+            <div class="goal-item" onclick="editGoal(${i})">
+              <span class="goal-num">${i + 1}</span>
+              <span class="goal-text">${g.text}</span>
+            </div>
+          `).join('')
+        : '';
+      
+      if (goals.length < 3) {
+        document.getElementById('goalsList').innerHTML += `
+          <div class="goal-add" onclick="addGoal()">+ Add Goal</div>
+        `;
+      }
+    }
+
+    function addGoal() {
+      const quarter = Math.floor(new Date().getMonth() / 3) + 1;
+      const year = new Date().getFullYear();
+      const key = `${year}-Q${quarter}`;
+      
+      const text = prompt('New Quarterly Goal:');
+      if (!text || !text.trim()) return;
+
+      let goals = [];
+      try { goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]'); } catch(e) {}
+      
+      const current = goals.filter(g => g.quarter === key);
+      if (current.length >= 3) return toast('Max 3 goals per quarter');
+
+      goals.push({ quarter: key, text: text.trim() });
+      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
+      renderQuarterlyGoals();
+      toast('Goal added');
+    }
+
+    function editGoal(idx) {
+      const quarter = Math.floor(new Date().getMonth() / 3) + 1;
+      const year = new Date().getFullYear();
+      const key = `${year}-Q${quarter}`;
+
+      let goals = [];
+      try { goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]'); } catch(e) {}
+      
+      const current = goals.filter(g => g.quarter === key);
+      const goal = current[idx];
+      if (!goal) return;
+
+      const action = prompt(`Edit goal:\n"${goal.text}"\n\nEnter new text, or type DELETE:`, goal.text);
+      if (action === null) return;
+
+      if (action.toUpperCase() === 'DELETE') {
+        const globalIdx = goals.findIndex(g => g.quarter === key && g.text === goal.text);
+        if (globalIdx > -1) goals.splice(globalIdx, 1);
+        toast('Goal deleted');
+      } else if (action.trim()) {
+        const globalIdx = goals.findIndex(g => g.quarter === key && g.text === goal.text);
+        if (globalIdx > -1) goals[globalIdx].text = action.trim();
+        toast('Goal updated');
+      }
+
+      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
+      renderQuarterlyGoals();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SYSTEM ACTIONS
+    // ═══════════════════════════════════════════════════════════
     function toggleSystem(id) {
       if (expandedSystems.has(id)) {
         expandedSystems.delete(id);
@@ -1993,724 +1952,319 @@
       renderSystems();
     }
 
-    function cycleSystemStatus(e, id, currentStatus) {
+    function cycleStatus(e, id, current) {
       e.stopPropagation();
-      const idx = statusOrder.indexOf(currentStatus);
-      const newStatus = statusOrder[(idx + 1) % statusOrder.length];
+      const idx = statusOrder.indexOf(current);
+      const next = statusOrder[(idx + 1) % statusOrder.length];
       
-      // B3: Optimistic Update
+      // Optimistic update
       const system = data.systems.find(s => s.ID === id);
       if (system) {
-        system.Status = newStatus;
+        system.Status = next;
         renderSystems();
-        render(); // Update stats
-        
-        apiPostSilent({ action: 'updateSystemStatus', systemId: id, status: newStatus })
-          .catch(() => {
-            system.Status = currentStatus;
-            renderSystems();
-            render();
-            toast('Sync failed - reverted');
-          });
+        render();
+        apiSilent({ action: 'updateSystemStatus', systemId: id, status: next })
+          .catch(() => { system.Status = current; render(); toast('Sync failed'); });
       }
     }
 
-    function editSystemName(e, id, currentName) {
+    function editSystemName(e, id, current) {
       e.stopPropagation();
-      const newName = prompt('System umbenennen:', currentName);
-      if (newName && newName !== currentName) {
-        // B3: Optimistic Update
-        const system = data.systems.find(s => s.ID === id);
-        if (system) {
-          system.Name = newName;
-          renderSystems();
-          
-          apiPostSilent({ action: 'updateSystemName', systemId: id, name: newName })
-            .catch(() => {
-              system.Name = currentName;
-              renderSystems();
-              toast('Sync failed - reverted');
-            });
-        }
+      const newName = prompt('Rename system:', current);
+      if (!newName || newName === current) return;
+      
+      const system = data.systems.find(s => s.ID === id);
+      if (system) {
+        system.Name = newName;
+        renderSystems();
+        apiSilent({ action: 'updateSystemName', systemId: id, name: newName })
+          .catch(() => { system.Name = current; renderSystems(); toast('Sync failed'); });
       }
+    }
+
+    function deleteSystem(id) {
+      if (!confirm('Delete this system and all its features?')) return;
+      apiPost({ action: 'deleteSystem', systemId: id });
+    }
+
+    function openAddSystemModal() {
+      document.getElementById('newSystemName').value = '';
+      document.getElementById('addSystemModal').classList.add('visible');
+      document.getElementById('newSystemName').focus();
+    }
+
+    function addSystem() {
+      const name = document.getElementById('newSystemName').value.trim();
+      const category = document.getElementById('newSystemCategory').value;
+      if (!name) return toast('Enter a name');
+      
+      closeModal('addSystemModal');
+      apiPost({ action: 'addSystem', name, category });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // FEATURE ACTIONS
+    // ═══════════════════════════════════════════════════════════
+    function toggleFeatureStatus(id) {
+      const feature = data.features.find(f => f.ID === id);
+      if (!feature) return;
+      
+      const newStatus = feature.Status === 'Active' ? 'Planned' : 'Active';
+      feature.Status = newStatus;
+      renderSystems();
+      
+      apiSilent({ action: 'updateFeatureStatus', featureId: id, status: newStatus })
+        .catch(() => { 
+          feature.Status = feature.Status === 'Active' ? 'Planned' : 'Active'; 
+          renderSystems(); 
+          toast('Sync failed'); 
+        });
     }
 
     function setFeatureLevel(id, level) {
-      // B3: Optimistic Update - UI first, sync in background
       const feature = data.features.find(f => f.ID === id);
-      if (feature) {
-        const oldLevel = feature.Level;
-        feature.Level = level;
-        renderSystems(); // Instant UI update
-        
-        // Sync in background (no await, no loading)
-        apiPostSilent({ action: 'updateFeatureLevel', featureId: id, level: level })
-          .catch(() => {
-            // Revert on error
-            feature.Level = oldLevel;
-            renderSystems();
-            toast('Sync failed - reverted');
-          });
-      }
+      if (!feature) return;
+      
+      const oldLevel = feature.Level;
+      feature.Level = level;
+      renderSystems();
+      renderProgress();
+      
+      apiSilent({ action: 'updateFeatureLevel', featureId: id, level })
+        .catch(() => { 
+          feature.Level = oldLevel; 
+          renderSystems(); 
+          renderProgress();
+          toast('Sync failed'); 
+        });
     }
 
-    function toggleFeatureStatus(id, currentStatus) {
-      // B3: Optimistic Update
-      const feature = data.features.find(f => f.ID === id);
-      if (feature) {
-        const newStatus = currentStatus === 'Active' ? 'Planned' : 'Active';
-        const oldStatus = feature.Status;
-        feature.Status = newStatus;
-        renderSystems();
-        
-        apiPostSilent({ action: 'updateFeatureStatus', featureId: id, status: newStatus })
-          .catch(() => {
-            feature.Status = oldStatus;
-            renderSystems();
-            toast('Sync failed - reverted');
-          });
-      }
-    }
-
-    function editFeatureName(e, id, currentName) {
+    function editFeatureName(e, id, current) {
       e.stopPropagation();
-      const newName = prompt('Feature umbenennen:', currentName);
-      if (newName && newName !== currentName) {
-        // B3: Optimistic Update
-        const feature = data.features.find(f => f.ID === id);
-        if (feature) {
-          feature.Name = newName;
-          renderSystems();
-          
-          apiPostSilent({ action: 'updateFeatureName', featureId: id, name: newName })
-            .catch(() => {
-              feature.Name = currentName;
-              renderSystems();
-              toast('Sync failed - reverted');
-            });
-        }
+      const newName = prompt('Rename feature:', current);
+      if (!newName || newName === current) return;
+      
+      const feature = data.features.find(f => f.ID === id);
+      if (feature) {
+        feature.Name = newName;
+        renderSystems();
+        apiSilent({ action: 'updateFeatureName', featureId: id, name: newName })
+          .catch(() => { feature.Name = current; renderSystems(); toast('Sync failed'); });
       }
     }
 
     function addFeature(systemId) {
-      const input = document.getElementById('newFeature_' + systemId);
+      const input = document.getElementById('input-' + systemId);
       const name = input.value.trim();
-      if (name) {
-        apiPost({ action: 'addFeature', systemId: systemId, name: name });
-        input.value = '';
-      }
+      if (!name) return;
+      
+      input.value = '';
+      apiPost({ action: 'addFeature', systemId, name });
     }
 
     function deleteFeature(id) {
-      if (confirm('Feature löschen?')) {
-        apiPost({ action: 'deleteFeature', featureId: id });
-      }
+      apiPost({ action: 'deleteFeature', featureId: id });
     }
 
-    function deleteSystem(id, name) {
-      if (confirm(`"${name}" und alle Features löschen?`)) {
-        apiPost({ action: 'deleteSystem', systemId: id });
-      }
-    }
-
-    // ============================================
-    // ADD SYSTEM MODAL
-    // ============================================
-    function openAddSystemModal() {
-      const categories = data.config.categories || [];
-      newSystemCategory = categories[0] || '';
-      newSystemStatus = 'Backlog';
-
-      document.getElementById('categoryOptions').innerHTML = categories.map(cat => `
-        <button class="modal-option ${newSystemCategory === cat ? 'selected' : ''}" onclick="selectCategory('${cat}')">
-          ${categoryIcons[cat] || ''} ${cat}
-        </button>
-      `).join('');
-
-      document.getElementById('statusOptions').innerHTML = statusOrder.map(s => `
-        <button class="modal-status-btn ${s.toLowerCase()} ${newSystemStatus === s ? 'selected' : ''}" onclick="selectStatus('${s}')">${s}</button>
-      `).join('');
-
-      document.getElementById('newSystemName').value = '';
-      document.getElementById('addSystemModal').classList.remove('hidden');
-    }
-
-    function closeAddSystemModal() {
-      document.getElementById('addSystemModal').classList.add('hidden');
-    }
-
-    function selectCategory(cat) {
-      newSystemCategory = cat;
-      document.querySelectorAll('#categoryOptions .modal-option').forEach(btn => {
-        btn.classList.toggle('selected', btn.textContent.includes(cat));
-      });
-    }
-
-    function selectStatus(status) {
-      newSystemStatus = status;
-      document.querySelectorAll('#statusOptions .modal-status-btn').forEach(btn => {
-        btn.classList.toggle('selected', btn.textContent === status);
-      });
-    }
-
-    function createSystem() {
-      const name = document.getElementById('newSystemName').value.trim();
-      if (name && newSystemCategory) {
-        apiPost({ action: 'addSystem', name: name, category: newSystemCategory, status: newSystemStatus });
-        closeAddSystemModal();
-      }
-    }
-
-    // ============================================
-    // WEEKLY REVIEW MODAL
-    // ============================================
-    const reviewSteps = [
-      { title: 'Rückblick', subtitle: 'Was ist diese Woche passiert?' },
-      { title: 'Energie-Check', subtitle: 'Wie geht es dir?' },
-      { title: 'Fokus', subtitle: 'Was ist nächste Woche wichtig?' },
-      { title: 'Zusammenfassung', subtitle: 'Dein Weekly Review' }
-    ];
-
+    // ═══════════════════════════════════════════════════════════
+    // WEEKLY REVIEW
+    // ═══════════════════════════════════════════════════════════
     function openReviewModal() {
-      reviewStep = 0;
-      reviewData = { wins: '', struggles: '', energy: 3, clarity: 3, focusSystems: [], priority: '' };
-      renderReviewStep();
-      document.getElementById('reviewModal').classList.remove('hidden');
+      document.getElementById('reviewWins').value = '';
+      document.getElementById('reviewStruggles').value = '';
+      document.getElementById('reviewEnergy').value = '';
+      
+      // Populate system dropdowns
+      [1, 2, 3].forEach(n => {
+        const select = document.getElementById('reviewFocus' + n);
+        select.innerHTML = '<option value="">Select system...</option>' +
+          data.systems.map(s => `<option value="${s.ID}">${s.Name}</option>`).join('');
+      });
+      
+      document.getElementById('reviewModal').classList.add('visible');
     }
 
-    function closeReviewModal() {
-      document.getElementById('reviewModal').classList.add('hidden');
+    function submitReview() {
+      const focus = [
+        document.getElementById('reviewFocus1').value,
+        document.getElementById('reviewFocus2').value,
+        document.getElementById('reviewFocus3').value
+      ].filter(Boolean);
+
+      localStorage.setItem('lifeOsWeeklyFocus', JSON.stringify({
+        date: new Date().toISOString(),
+        systems: focus
+      }));
+
+      // Save review to sheet
+      apiPost({
+        action: 'addWeeklyReview',
+        wins: document.getElementById('reviewWins').value,
+        struggles: document.getElementById('reviewStruggles').value,
+        energy: document.getElementById('reviewEnergy').value,
+        focus: focus.join(','),
+        progress: document.getElementById('progressValue').textContent
+      });
+
+      closeModal('reviewModal');
+      renderFocus();
     }
 
-    function renderReviewStep() {
-      const step = reviewSteps[reviewStep];
-      document.getElementById('reviewStepTitle').textContent = step.title;
-      document.getElementById('reviewStepSubtitle').textContent = step.subtitle;
+    // ═══════════════════════════════════════════════════════════
+    // COMMAND PALETTE
+    // ═══════════════════════════════════════════════════════════
+    let commandSelected = 0;
+    let commandItems = [];
 
-      // Progress
-      document.getElementById('reviewProgress').innerHTML = reviewSteps.map((_, i) => 
-        `<div class="review-step ${i <= reviewStep ? 'active' : ''}"></div>`
-      ).join('');
+    function openCommandPalette() {
+      document.getElementById('commandOverlay').classList.add('visible');
+      document.getElementById('commandInput').value = '';
+      document.getElementById('commandInput').focus();
+      commandSelected = 0;
+      renderCommandResults('');
+    }
 
-      // Buttons
-      document.getElementById('reviewBackBtn').style.display = reviewStep > 0 ? 'block' : 'none';
-      document.getElementById('reviewNextBtn').textContent = reviewStep < 3 ? 'Weiter' : 'Abschließen';
+    function closeCommandPalette() {
+      document.getElementById('commandOverlay').classList.remove('visible');
+    }
 
-      // Content
-      const content = document.getElementById('reviewContent');
-      if (reviewStep === 0) {
-        const struggling = data.systems.filter(s => s.Status === 'Struggle' || s.Status === 'Rework');
-        content.innerHTML = `
-          <div style="margin-bottom: 20px;">
-            <label class="modal-label">🏆 Was lief gut?</label>
-            <textarea class="review-textarea" id="reviewWins" placeholder="z.B. 4x Gym, Budget eingehalten...">${reviewData.wins}</textarea>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <label class="modal-label">⚠️ Was war schwierig?</label>
-            <textarea class="review-textarea" id="reviewStruggles" placeholder="z.B. Task Management chaotisch...">${reviewData.struggles}</textarea>
-          </div>
-          ${struggling.length > 0 ? `
-            <div style="background: rgba(255,159,10,0.1); border-radius: 12px; padding: 16px;">
-              <div style="font-size: 13px; color: var(--orange); margin-bottom: 8px;">⚡ ${struggling.length} System${struggling.length > 1 ? 'e' : ''} brauchen Aufmerksamkeit:</div>
-              <div style="color: var(--muted); font-size: 14px;">${struggling.map(s => s.Name).join(', ')}</div>
-            </div>
-          ` : ''}
-        `;
-      } else if (reviewStep === 1) {
-        content.innerHTML = `
-          <div style="margin-bottom: 32px;">
-            <label class="modal-label">Energie-Level diese Woche</label>
-            <div class="review-scale">
-              ${[1,2,3,4,5].map(n => `<button class="review-scale-btn ${reviewData.energy === n ? 'selected' : ''}" onclick="setReviewEnergy(${n})">${['😴','😕','😐','😊','🔥'][n-1]}</button>`).join('')}
-            </div>
-            <div class="review-scale-labels"><span>Ausgebrannt</span><span>Volle Power</span></div>
-          </div>
-          <div>
-            <label class="modal-label">Klarheit über Prioritäten</label>
-            <div class="review-scale">
-              ${[1,2,3,4,5].map(n => `<button class="review-scale-btn ${reviewData.clarity === n ? 'selected' : ''}" onclick="setReviewClarity(${n})">${['🌫️','☁️','⛅','🌤️','☀️'][n-1]}</button>`).join('')}
-            </div>
-            <div class="review-scale-labels"><span>Völlig unklar</span><span>Kristallklar</span></div>
-          </div>
-        `;
-      } else if (reviewStep === 2) {
-        content.innerHTML = `
-          <div style="margin-bottom: 20px;">
-            <label class="modal-label">Wähle max. 3 Fokus-Systeme:</label>
-            <div class="review-systems">
-              ${data.systems.map(s => {
-                const selected = reviewData.focusSystems.includes(s.ID);
-                const statusStyle = statusColors[s.Status] || statusColors['Backlog'];
-                return `<button class="review-system-btn ${selected ? 'selected' : ''}" onclick="toggleFocusSystem('${s.ID}')">
-                  <div style="width:8px;height:8px;border-radius:50%;background:${statusStyle.color}"></div>
-                  ${s.Name}
-                  ${selected ? '<span style="margin-left:auto;color:var(--blue)">✓</span>' : ''}
-                </button>`;
-              }).join('')}
-            </div>
-          </div>
-          <div>
-            <label class="modal-label">#1 Priorität nächste Woche:</label>
-            <input type="text" class="modal-input" id="reviewPriority" value="${reviewData.priority}" placeholder="z.B. Budget System aufsetzen">
-          </div>
-        `;
-      } else {
-        const avgProgress = data.features.length > 0 
-          ? Math.round(data.features.reduce((sum, f) => sum + (f.Level / 5), 0) / data.features.length * 100)
-          : 0;
-        content.innerHTML = `
-          <div class="review-summary">
-            <div class="review-summary-card">
-              <div class="review-summary-label">Gesamtfortschritt</div>
-              <div class="review-summary-value" style="font-size: 32px; font-weight: 600;">${avgProgress}%</div>
-            </div>
-            ${reviewData.wins ? `<div><div class="review-summary-label">🏆 Wins</div><div class="review-summary-value">${reviewData.wins}</div></div>` : ''}
-            ${reviewData.struggles ? `<div><div class="review-summary-label">⚠️ Struggles</div><div class="review-summary-value">${reviewData.struggles}</div></div>` : ''}
-            <div class="review-summary-row">
-              <div class="review-summary-card">
-                <div style="font-size: 24px; margin-bottom: 4px;">${['😴','😕','😐','😊','🔥'][reviewData.energy-1]}</div>
-                <div class="review-summary-label">Energie</div>
-              </div>
-              <div class="review-summary-card">
-                <div style="font-size: 24px; margin-bottom: 4px;">${['🌫️','☁️','⛅','🌤️','☀️'][reviewData.clarity-1]}</div>
-                <div class="review-summary-label">Klarheit</div>
-              </div>
-            </div>
-            ${reviewData.focusSystems.length > 0 ? `
-              <div>
-                <div class="review-summary-label">🎯 Fokus nächste Woche</div>
-                <div class="review-focus-tags">${reviewData.focusSystems.map(id => {
-                  const sys = data.systems.find(s => s.ID === id);
-                  return sys ? `<span class="review-focus-tag">${sys.Name}</span>` : '';
-                }).join('')}</div>
-              </div>
-            ` : ''}
-            ${reviewData.priority ? `
-              <div class="review-priority-box">
-                <div class="review-summary-label">#1 Priorität</div>
-                <div style="font-size: 16px; font-weight: 500;">${reviewData.priority}</div>
-              </div>
-            ` : ''}
-          </div>
-        `;
+    function handleCommandInput(e) {
+      commandSelected = 0;
+      renderCommandResults(e.target.value.toLowerCase());
+    }
+
+    function handleCommandKeydown(e) {
+      if (e.key === 'Escape') closeCommandPalette();
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        commandSelected = Math.min(commandSelected + 1, commandItems.length - 1);
+        updateCommandSelection();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        commandSelected = Math.max(commandSelected - 1, 0);
+        updateCommandSelection();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (commandItems[commandSelected]) commandItems[commandSelected].action();
       }
     }
 
-    function setReviewEnergy(n) { reviewData.energy = n; renderReviewStep(); }
-    function setReviewClarity(n) { reviewData.clarity = n; renderReviewStep(); }
-    function toggleFocusSystem(id) {
-      if (reviewData.focusSystems.includes(id)) {
-        reviewData.focusSystems = reviewData.focusSystems.filter(i => i !== id);
-      } else if (reviewData.focusSystems.length < 3) {
-        reviewData.focusSystems.push(id);
-      }
-      renderReviewStep();
-    }
+    function renderCommandResults(query) {
+      commandItems = [];
+      let html = '';
 
-    function reviewBack() {
-      saveReviewStepData();
-      reviewStep--;
-      renderReviewStep();
-    }
+      // Actions
+      const actions = [
+        { icon: '📋', text: 'Weekly Review', hint: 'W', action: () => { closeCommandPalette(); openReviewModal(); }},
+        { icon: '➕', text: 'Add System', hint: 'N', action: () => { closeCommandPalette(); openAddSystemModal(); }},
+        { icon: '↻', text: 'Refresh', hint: 'R', action: () => { closeCommandPalette(); loadData(); }},
+        { icon: '★', text: 'Edit North Star', action: () => { closeCommandPalette(); editNorthStar(); }},
+        { icon: '◆', text: 'Add Goal', action: () => { closeCommandPalette(); addGoal(); }},
+      ].filter(a => a.text.toLowerCase().includes(query) || (a.hint && a.hint.toLowerCase() === query));
 
-    function reviewNext() {
-      saveReviewStepData();
-      if (reviewStep < 3) {
-        reviewStep++;
-        renderReviewStep();
-      } else {
-        // Save review
-        const avgProgress = data.features.length > 0 
-          ? Math.round(data.features.reduce((sum, f) => sum + (f.Level / 5), 0) / data.features.length * 100)
-          : 0;
-        
-        // Save focus systems to localStorage for Weekly Focus display
-        if (reviewData.focusSystems.length > 0) {
-          localStorage.setItem('lifeOsWeeklyFocus', JSON.stringify({
-            date: new Date().toISOString(),
-            systems: reviewData.focusSystems
-          }));
-        }
-
-        apiPost({
-          action: 'saveWeeklyReview',
-          review: {
-            date: new Date().toISOString().split('T')[0],
-            overallProgress: avgProgress,
-            energy: reviewData.energy,
-            clarity: reviewData.clarity,
-            focusSystem1: reviewData.focusSystems[0] || '',
-            focusSystem2: reviewData.focusSystems[1] || '',
-            focusSystem3: reviewData.focusSystems[2] || '',
-            priority: reviewData.priority,
-            wins: reviewData.wins,
-            struggles: reviewData.struggles
-          }
+      if (actions.length) {
+        html += '<div class="command-group"><div class="command-group-label">Actions</div>';
+        actions.forEach(a => {
+          commandItems.push(a);
+          html += `<div class="command-item ${commandItems.length - 1 === commandSelected ? 'selected' : ''}" 
+            onclick="commandItems[${commandItems.length - 1}].action()">
+            <span class="command-item-icon">${a.icon}</span>
+            <span class="command-item-text">${a.text}</span>
+            ${a.hint ? `<span class="command-item-hint">${a.hint}</span>` : ''}
+          </div>`;
         });
-        closeReviewModal();
+        html += '</div>';
       }
-    }
 
-    function saveReviewStepData() {
-      if (reviewStep === 0) {
-        reviewData.wins = document.getElementById('reviewWins')?.value || '';
-        reviewData.struggles = document.getElementById('reviewStruggles')?.value || '';
-      } else if (reviewStep === 2) {
-        reviewData.priority = document.getElementById('reviewPriority')?.value || '';
+      // Systems
+      const systems = data.systems.filter(s => s.Name.toLowerCase().includes(query)).slice(0, 5);
+      if (systems.length) {
+        html += '<div class="command-group"><div class="command-group-label">Systems</div>';
+        systems.forEach(s => {
+          const item = {
+            icon: categoryIcons[s.Category] || '○',
+            text: s.Name,
+            hint: s.Status,
+            action: () => {
+              closeCommandPalette();
+              expandedSystems.add(s.ID);
+              selectedCategory = 'all';
+              renderFilters();
+              renderSystems();
+              setTimeout(() => {
+                document.querySelector(`.system-card[data-id="${s.ID}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }
+          };
+          commandItems.push(item);
+          html += `<div class="command-item ${commandItems.length - 1 === commandSelected ? 'selected' : ''}" 
+            onclick="commandItems[${commandItems.length - 1}].action()">
+            <span class="command-item-icon">${item.icon}</span>
+            <span class="command-item-text">${item.text}</span>
+            <span class="command-item-hint">${item.hint}</span>
+          </div>`;
+        });
+        html += '</div>';
       }
+
+      if (!commandItems.length) {
+        html = '<div style="padding:24px;text-align:center;color:var(--text-tertiary)">No results</div>';
+      }
+
+      document.getElementById('commandResults').innerHTML = html;
     }
 
-    // ============================================
-    // UTILS
-    // ============================================
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('visible');
-      setTimeout(() => t.classList.remove('visible'), 2000);
+    function updateCommandSelection() {
+      document.querySelectorAll('.command-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === commandSelected);
+      });
+      document.querySelectorAll('.command-item')[commandSelected]?.scrollIntoView({ block: 'nearest' });
     }
 
-    // Start
-    init();
-
-    // Search functionality
-    let searchQuery = '';
-
-    function handleSearch(event) {
-      searchQuery = event.target.value.toLowerCase().trim();
+    // ═══════════════════════════════════════════════════════════
+    // SEARCH & KEYBOARD
+    // ═══════════════════════════════════════════════════════════
+    function handleSearch(e) {
+      searchQuery = e.target.value.toLowerCase().trim();
       renderSystems();
     }
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      // Command Palette: Cmd+K or Ctrl+K
+    document.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         openCommandPalette();
         return;
       }
 
-      // Don't trigger if typing in input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        if (e.key === 'Escape') {
-          e.target.blur();
-          searchQuery = '';
-          document.getElementById('searchInput').value = '';
-          renderSystems();
-        }
+        if (e.key === 'Escape') e.target.blur();
         return;
       }
 
       if (e.key === '/') {
         e.preventDefault();
         document.getElementById('searchInput').focus();
-      } else if (e.key === 'r' || e.key === 'R') {
-        loadData();
-      } else if (e.key === 'n' || e.key === 'N') {
-        openAddSystemModal();
-      } else if (e.key === 'w' || e.key === 'W') {
-        openReviewModal();
-      }
+      } else if (e.key === 'r') loadData();
+      else if (e.key === 'n') openAddSystemModal();
+      else if (e.key === 'w') openReviewModal();
     });
 
-    // G4: Command Palette Functions
-    let commandSelectedIndex = 0;
-    let commandItems = [];
-
-    function openCommandPalette() {
-      document.getElementById('commandPalette').classList.add('visible');
-      document.getElementById('commandInput').value = '';
-      document.getElementById('commandInput').focus();
-      commandSelectedIndex = 0;
-      renderCommandResults('');
+    // ═══════════════════════════════════════════════════════════
+    // UTILS
+    // ═══════════════════════════════════════════════════════════
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('visible');
     }
 
-    function closeCommandPalette() {
-      document.getElementById('commandPalette').classList.remove('visible');
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('visible');
+      setTimeout(() => el.classList.remove('visible'), 2500);
     }
 
-    function handleCommandInput(e) {
-      const query = e.target.value.toLowerCase();
-      commandSelectedIndex = 0;
-      renderCommandResults(query);
-    }
-
-    function handleCommandKeydown(e) {
-      if (e.key === 'Escape') {
-        closeCommandPalette();
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        commandSelectedIndex = Math.min(commandSelectedIndex + 1, commandItems.length - 1);
-        updateCommandSelection();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        commandSelectedIndex = Math.max(commandSelectedIndex - 1, 0);
-        updateCommandSelection();
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (commandItems[commandSelectedIndex]) {
-          executeCommand(commandItems[commandSelectedIndex]);
-        }
-      }
-    }
-
-    function renderCommandResults(query) {
-      commandItems = [];
-      
-      // Actions
-      const actions = [
-        { type: 'action', icon: '📋', text: 'Weekly Review', hint: 'W', action: () => { closeCommandPalette(); openReviewModal(); }},
-        { type: 'action', icon: '➕', text: 'Add New System', hint: 'N', action: () => { closeCommandPalette(); openAddSystemModal(); }},
-        { type: 'action', icon: '🔄', text: 'Refresh Data', hint: 'R', action: () => { closeCommandPalette(); loadData(); }},
-        { type: 'action', icon: '⚙️', text: 'Reset Connection', action: () => { closeCommandPalette(); resetConnection(); }},
-        { type: 'action', icon: '★', text: 'Edit North Star', action: () => { closeCommandPalette(); editNorthStar(); }},
-        { type: 'action', icon: '◆', text: 'Add Quarterly Goal', action: () => { closeCommandPalette(); addQuarterlyGoal(); }},
-      ];
-
-      // Filter actions
-      const filteredActions = actions.filter(a => 
-        a.text.toLowerCase().includes(query) || 
-        (a.hint && a.hint.toLowerCase() === query)
-      );
-
-      // Systems
-      const filteredSystems = data.systems.filter(s => 
-        s.Name.toLowerCase().includes(query)
-      ).map(s => ({
-        type: 'system',
-        icon: categoryIcons[s.Category] || '○',
-        text: s.Name,
-        hint: s.Status,
-        action: () => { 
-          closeCommandPalette();
-          expandedSystems.add(s.ID);
-          selectedCategory = 'all';
-          renderFilters();
-          renderSystems();
-          setTimeout(() => {
-            document.querySelector(`.system[data-id="${s.ID}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 100);
-        }
-      }));
-
-      // Features
-      const filteredFeatures = data.features.filter(f => 
-        f.Name.toLowerCase().includes(query)
-      ).slice(0, 5).map(f => {
-        const system = data.systems.find(s => s.ID === f.SystemID);
-        return {
-          type: 'feature',
-          icon: '·',
-          text: f.Name,
-          hint: system ? system.Name : '',
-          action: () => {
-            closeCommandPalette();
-            if (system) {
-              expandedSystems.add(system.ID);
-              selectedCategory = 'all';
-              renderFilters();
-              renderSystems();
-              setTimeout(() => {
-                document.querySelector(`.system[data-id="${system.ID}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }, 100);
-            }
-          }
-        };
-      });
-
-      // Build results HTML
-      let html = '';
-
-      if (filteredActions.length > 0) {
-        html += `<div class="command-group-label">Actions</div>`;
-        filteredActions.forEach(item => {
-          commandItems.push(item);
-          html += renderCommandItem(item, commandItems.length - 1);
-        });
-      }
-
-      if (filteredSystems.length > 0) {
-        html += `<div class="command-group-label">Systems</div>`;
-        filteredSystems.forEach(item => {
-          commandItems.push(item);
-          html += renderCommandItem(item, commandItems.length - 1);
-        });
-      }
-
-      if (filteredFeatures.length > 0) {
-        html += `<div class="command-group-label">Features</div>`;
-        filteredFeatures.forEach(item => {
-          commandItems.push(item);
-          html += renderCommandItem(item, commandItems.length - 1);
-        });
-      }
-
-      if (commandItems.length === 0) {
-        html = `<div class="empty-state" style="padding: 24px;"><div class="empty-state-text">No results found</div></div>`;
-      }
-
-      document.getElementById('commandResults').innerHTML = html;
-    }
-
-    function renderCommandItem(item, index) {
-      return `
-        <div class="command-item ${index === commandSelectedIndex ? 'selected' : ''}" onclick="executeCommand(commandItems[${index}])">
-          <span class="command-item-icon">${item.icon}</span>
-          <span class="command-item-text">${item.text}</span>
-          ${item.hint ? `<span class="command-item-hint">${item.hint}</span>` : ''}
-        </div>
-      `;
-    }
-
-    function updateCommandSelection() {
-      document.querySelectorAll('.command-item').forEach((el, i) => {
-        el.classList.toggle('selected', i === commandSelectedIndex);
-      });
-      // Scroll into view
-      document.querySelectorAll('.command-item')[commandSelectedIndex]?.scrollIntoView({ block: 'nearest' });
-    }
-
-    function executeCommand(item) {
-      if (item && item.action) {
-        item.action();
-      }
-    }
-
-    // North Star (Phase 4)
-    function renderNorthStar() {
-      const saved = localStorage.getItem('lifeOsNorthStar') || '';
-      
-      const updateElement = (id) => {
-        const textEl = document.getElementById(id);
-        if (!textEl) return;
-        if (saved) {
-          textEl.textContent = '"' + saved + '"';
-          textEl.classList.remove('empty');
-        } else {
-          textEl.textContent = 'Define your North Star...';
-          textEl.classList.add('empty');
-        }
-      };
-      
-      updateElement('northStarTextMobile');
-      updateElement('northStarTextDesktop');
-    }
-
-    function editNorthStar() {
-      const current = localStorage.getItem('lifeOsNorthStar') || '';
-      const newValue = prompt('Your North Star – Why are you doing all this?', current);
-      
-      if (newValue !== null) {
-        localStorage.setItem('lifeOsNorthStar', newValue.trim());
-        renderNorthStar();
-        toast('North Star saved');
-      }
-    }
-
-    // Render North Star on load
-    renderNorthStar();
-
-    // Quarterly Goals (Phase 5)
-    function renderQuarterlyGoals() {
-      const now = new Date();
-      const quarter = Math.floor(now.getMonth() / 3) + 1;
-      const year = now.getFullYear();
-      const quarterKey = `${year}-Q${quarter}`;
-      
-      document.getElementById('quarterlyPeriod').textContent = `Q${quarter} ${year}`;
-      
-      let goals = [];
-      try {
-        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
-        // Filter to current quarter
-        goals = goals.filter(g => g.quarter === quarterKey);
-      } catch (e) {}
-
-      const listEl = document.getElementById('quarterlyList');
-      
-      if (goals.length === 0) {
-        listEl.innerHTML = `
-          <div class="quarterly-empty">No goals set for Q${quarter}</div>
-          <div class="quarterly-add" onclick="addQuarterlyGoal()">+ Add Goal</div>
-        `;
-        return;
-      }
-
-      let html = goals.map((goal, idx) => `
-        <div class="quarterly-item" onclick="editQuarterlyGoal(${idx})">
-          <div class="quarterly-number">${idx + 1}</div>
-          <div class="quarterly-text">${goal.text}</div>
-        </div>
-      `).join('');
-
-      if (goals.length < 3) {
-        html += `<div class="quarterly-add" onclick="addQuarterlyGoal()">+ Add Goal</div>`;
-      }
-
-      listEl.innerHTML = html;
-    }
-
-    function addQuarterlyGoal() {
-      const now = new Date();
-      const quarter = Math.floor(now.getMonth() / 3) + 1;
-      const year = now.getFullYear();
-      const quarterKey = `${year}-Q${quarter}`;
-
-      const text = prompt('New Quarterly Goal:');
-      if (!text || !text.trim()) return;
-
-      let goals = [];
-      try {
-        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
-      } catch (e) {}
-
-      const currentGoals = goals.filter(g => g.quarter === quarterKey);
-      if (currentGoals.length >= 3) {
-        alert('Maximum 3 goals per quarter');
-        return;
-      }
-
-      goals.push({ quarter: quarterKey, text: text.trim() });
-      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
-      renderQuarterlyGoals();
-      toast('Goal added');
-    }
-
-    function editQuarterlyGoal(idx) {
-      const now = new Date();
-      const quarter = Math.floor(now.getMonth() / 3) + 1;
-      const year = now.getFullYear();
-      const quarterKey = `${year}-Q${quarter}`;
-
-      let goals = [];
-      try {
-        goals = JSON.parse(localStorage.getItem('lifeOsQuarterlyGoals') || '[]');
-      } catch (e) {}
-
-      const currentGoals = goals.filter(g => g.quarter === quarterKey);
-      const goal = currentGoals[idx];
-      if (!goal) return;
-
-      const action = prompt(`Edit or delete goal:\n\n"${goal.text}"\n\nEnter new text, or type DELETE to remove:`, goal.text);
-      
-      if (action === null) return;
-      
-      if (action.toUpperCase() === 'DELETE') {
-        const globalIdx = goals.findIndex(g => g.quarter === quarterKey && g.text === goal.text);
-        if (globalIdx > -1) goals.splice(globalIdx, 1);
-        toast('Goal deleted');
-      } else if (action.trim()) {
-        const globalIdx = goals.findIndex(g => g.quarter === quarterKey && g.text === goal.text);
-        if (globalIdx > -1) goals[globalIdx].text = action.trim();
-        toast('Goal updated');
-      }
-
-      localStorage.setItem('lifeOsQuarterlyGoals', JSON.stringify(goals));
-      renderQuarterlyGoals();
-    }
-
-    // Render Quarterly Goals on load
-    renderQuarterlyGoals();
+    // Start
+    init();
   </script>
 </body>
 </html>
