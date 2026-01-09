@@ -57,7 +57,11 @@
       body { padding-top: calc(60px + var(--safe-top)); }
     }
 
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { 
+      max-width: 100%; 
+      margin: 0 auto; 
+      padding: 0 24px;
+    }
 
     /* 2-Column Layout */
     .dashboard-grid {
@@ -67,16 +71,85 @@
     }
 
     @media (min-width: 1024px) {
-      .dashboard-grid {
-        grid-template-columns: 340px 1fr;
-        gap: 32px;
+      body {
+        overflow: hidden;
+        height: 100vh;
+        padding: 0;
       }
+      
+      .container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 32px;
+      }
+
+      .header {
+        flex-shrink: 0;
+        margin-bottom: 16px;
+      }
+
+      .north-star {
+        flex-shrink: 0;
+      }
+
+      .dashboard-grid {
+        flex: 1;
+        grid-template-columns: 320px 1fr;
+        gap: 32px;
+        overflow: hidden;
+        min-height: 0;
+      }
+
       .sidebar {
-        position: sticky;
-        top: 20px;
-        height: fit-content;
-        max-height: calc(100vh - 40px);
+        height: 100%;
         overflow-y: auto;
+        padding-right: 8px;
+      }
+
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+      }
+      .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.2);
+      }
+
+      .main-content {
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 8px;
+      }
+
+      .main-content::-webkit-scrollbar {
+        width: 6px;
+      }
+      .main-content::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .main-content::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+      }
+      .main-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.2);
+      }
+
+      .footer {
+        flex-shrink: 0;
+        margin-top: 16px;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .dashboard-grid {
+        grid-template-columns: 360px 1fr;
       }
     }
 
@@ -96,6 +169,7 @@
     .search-bar {
       position: relative;
       margin-bottom: 8px;
+      flex-shrink: 0;
     }
     .search-input {
       width: 100%;
@@ -582,8 +656,90 @@
     .stat-value { font-size: 22px; font-weight: 600; }
     .stat-sub { font-size: 10px; color: var(--dim); margin-top: 2px; }
 
+    /* Mobile Layout Optimization (G5) */
     @media (max-width: 1023px) {
       .stats { grid-template-columns: repeat(4, 1fr); }
+      
+      .sidebar {
+        order: 1;
+      }
+      
+      .main-content {
+        order: 2;
+      }
+
+      /* Reorder sidebar elements for mobile */
+      .sidebar {
+        display: contents;
+      }
+
+      #dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .dashboard-grid {
+        display: contents;
+      }
+
+      /* Mobile order: Most important first */
+      .header { order: 1; }
+      .north-star { order: 2; }
+      .quarterly-goals { order: 3; margin-bottom: 0; }
+      .weekly-focus { order: 4; margin-bottom: 0; }
+      .progress-momentum-row { order: 5; margin-bottom: 0; }
+      .attention-queue { order: 6; margin-bottom: 0; }
+      .search-bar { order: 7; }
+      .filters { order: 8; }
+      .edit-hint { order: 9; }
+      .systems { order: 10; }
+      .stats { order: 11; }
+      .header-actions { order: 12; }
+      .footer { order: 13; }
+
+      /* Hide less important elements on mobile initially */
+      .edit-hint {
+        display: none;
+      }
+
+      /* Compact mobile progress row */
+      .progress-momentum-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .ring-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+
+      .ring-value {
+        font-size: 24px;
+      }
+
+      .momentum-card {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      
+      .progress-momentum-row {
+        flex-direction: column;
+      }
+      
+      .ring-wrapper {
+        width: 120px;
+        height: 120px;
+      }
+      
+      .ring-value {
+        font-size: 28px;
+      }
     }
 
     /* Filters */
@@ -649,6 +805,7 @@
     .feature {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); gap: 10px;
+      position: relative;
     }
     .feature:last-of-type { border-bottom: none; }
     .feature-left { display: flex; align-items: center; gap: 10px; flex: 1; }
@@ -658,8 +815,49 @@
     .feature-dot.active { background: var(--green); }
     .feature-dot.planned { background: rgba(255,255,255,0.2); }
     .feature-dot:hover { transform: scale(1.3); }
-    .feature-name { font-size: 13px; flex: 1; }
+    
+    /* G3: Quick Edit on Hover */
+    .feature-name-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+    .feature-name { font-size: 13px; flex: 1; cursor: default; }
     .feature-name.planned { color: var(--muted); }
+    .feature-edit-btn {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .feature:hover .feature-edit-btn { opacity: 1; }
+    .feature-edit-btn:hover { color: var(--blue); }
+    
+    .system-name-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .system-edit-btn {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      transition: all 0.2s;
+    }
+    .system-header:hover .system-edit-btn { opacity: 1; }
+    .system-edit-btn:hover { color: var(--blue); }
+    
     .feature-name-input {
       background: rgba(255,255,255,0.1); border: 1px solid var(--border);
       border-radius: 6px; padding: 4px 8px; color: var(--text);
@@ -677,7 +875,9 @@
     .feature-delete {
       background: none; border: none; color: var(--dim);
       cursor: pointer; font-size: 16px; padding: 0 2px; transition: color 0.2s;
+      opacity: 0;
     }
+    .feature:hover .feature-delete { opacity: 1; }
     .feature-delete:hover { color: var(--red); }
 
     /* Add Feature */
@@ -720,6 +920,156 @@
       color: var(--muted); font-size: 13px; font-weight: 500; width: 100%;
     }
     .add-system-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(10,132,255,0.05); }
+
+    /* G4: Command Palette */
+    .command-palette {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    .command-palette.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .command-palette-box {
+      background: #1c1c1e;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 500px;
+      overflow: hidden;
+      transform: translateY(-10px);
+      transition: transform 0.2s;
+    }
+    .command-palette.visible .command-palette-box {
+      transform: translateY(0);
+    }
+    .command-input-wrapper {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .command-input-icon {
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .command-input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+    .command-input::placeholder {
+      color: var(--dim);
+    }
+    .command-shortcut {
+      font-size: 11px;
+      color: var(--dim);
+      background: rgba(255,255,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .command-results {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .command-group-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 16px 6px;
+    }
+    .command-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .command-item:hover,
+    .command-item.selected {
+      background: rgba(255,255,255,0.05);
+    }
+    .command-item-icon {
+      font-size: 16px;
+      width: 24px;
+      text-align: center;
+    }
+    .command-item-text {
+      flex: 1;
+      font-size: 14px;
+    }
+    .command-item-hint {
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .command-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--dim);
+      display: flex;
+      gap: 16px;
+    }
+    .command-footer span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .command-footer kbd {
+      background: rgba(255,255,255,0.1);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    /* G6: Empty/Initial States */
+    .empty-state {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--muted);
+    }
+    .empty-state-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .empty-state-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .empty-state-text {
+      font-size: 13px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .empty-state-btn {
+      background: var(--blue);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
 
     /* Footer */
     .footer {
@@ -899,7 +1249,7 @@
         <div class="header-label">Life Operating System</div>
         <h1 class="header-title">Control Center</h1>
         <div class="header-meta" id="lastUpdated"></div>
-        <div class="header-version">v1.5.0</div>
+        <div class="header-version">v1.6.0</div>
       </div>
 
       <!-- North Star (Phase 4) -->
@@ -1013,6 +1363,23 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- G4: Command Palette -->
+  <div class="command-palette" id="commandPalette" onclick="if(event.target === this) closeCommandPalette()">
+    <div class="command-palette-box">
+      <div class="command-input-wrapper">
+        <span class="command-input-icon">⌘</span>
+        <input type="text" class="command-input" id="commandInput" placeholder="Type a command or search..." onkeyup="handleCommandInput(event)" onkeydown="handleCommandKeydown(event)">
+        <span class="command-shortcut">ESC</span>
+      </div>
+      <div class="command-results" id="commandResults"></div>
+      <div class="command-footer">
+        <span><kbd>↑↓</kbd> Navigate</span>
+        <span><kbd>↵</kbd> Select</span>
+        <span><kbd>ESC</kbd> Close</span>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ============================================
@@ -1314,8 +1681,10 @@
 
       if (weeklyData.length < 2) {
         card.innerHTML = `
-          <div class="momentum-card empty">
-            Complete a Weekly Review<br>to unlock Momentum tracking
+          <div class="empty-state" style="padding: 16px;">
+            <div class="empty-state-icon">📈</div>
+            <div class="empty-state-title">Momentum Tracking</div>
+            <div class="empty-state-text">Complete your first Weekly Review to see your progress trend</div>
           </div>
         `;
         return;
@@ -1449,7 +1818,10 @@
               <div class="system-icon" style="background: linear-gradient(135deg, ${statusStyle.color}22, ${statusStyle.color}44)">${icon}</div>
               <div class="system-info">
                 <div class="system-title">
-                  <span class="system-name" ondblclick="editSystemName(event, '${system.ID}', '${system.Name}')">${system.Name}</span>
+                  <div class="system-name-wrapper">
+                    <span class="system-name">${system.Name}</span>
+                    <button class="system-edit-btn" onclick="editSystemName(event, '${system.ID}', '${system.Name}')" title="Edit name">✎</button>
+                  </div>
                   <span class="badge badge-${system.Status.toLowerCase()}" onclick="cycleSystemStatus(event, '${system.ID}', '${system.Status}')">${system.Status}</span>
                 </div>
                 <div class="system-meta">
@@ -1488,15 +1860,18 @@
       return `
         <div class="feature" data-id="${f.ID}">
           <div class="feature-left">
-            <div class="feature-dot ${isActive ? 'active' : 'planned'}" onclick="toggleFeatureStatus('${f.ID}', '${f.Status}')" title="${isActive ? 'Active' : 'Planned'}"></div>
-            <span class="feature-name ${isActive ? '' : 'planned'}" ondblclick="editFeatureName(event, '${f.ID}', '${f.Name}')">${f.Name}</span>
+            <div class="feature-dot ${isActive ? 'active' : 'planned'}" onclick="toggleFeatureStatus('${f.ID}', '${f.Status}')" title="${isActive ? 'Active → Planned' : 'Planned → Active'}"></div>
+            <div class="feature-name-wrapper">
+              <span class="feature-name ${isActive ? '' : 'planned'}">${f.Name}</span>
+              <button class="feature-edit-btn" onclick="editFeatureName(event, '${f.ID}', '${f.Name}')" title="Edit name">✎</button>
+            </div>
           </div>
           <div class="feature-right">
             <span class="feature-level">LV ${f.Level}</span>
             <div class="level-dots">
-              ${[0,1,2,3,4].map(i => `<div class="level-dot ${i < f.Level ? 'filled' : ''}" onclick="setFeatureLevel('${f.ID}', ${i + 1 === f.Level ? i : i + 1})"></div>`).join('')}
+              ${[0,1,2,3,4].map(i => `<div class="level-dot ${i < f.Level ? 'filled' : ''}" onclick="setFeatureLevel('${f.ID}', ${i + 1 === f.Level ? i : i + 1})" title="Level ${i + 1}"></div>`).join('')}
             </div>
-            <button class="feature-delete" onclick="deleteFeature('${f.ID}')">×</button>
+            <button class="feature-delete" onclick="deleteFeature('${f.ID}')" title="Delete">×</button>
           </div>
         </div>
       `;
@@ -1837,6 +2212,13 @@
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+      // Command Palette: Cmd+K or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
       // Don't trigger if typing in input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         if (e.key === 'Escape') {
@@ -1859,6 +2241,169 @@
         openReviewModal();
       }
     });
+
+    // G4: Command Palette Functions
+    let commandSelectedIndex = 0;
+    let commandItems = [];
+
+    function openCommandPalette() {
+      document.getElementById('commandPalette').classList.add('visible');
+      document.getElementById('commandInput').value = '';
+      document.getElementById('commandInput').focus();
+      commandSelectedIndex = 0;
+      renderCommandResults('');
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('commandPalette').classList.remove('visible');
+    }
+
+    function handleCommandInput(e) {
+      const query = e.target.value.toLowerCase();
+      commandSelectedIndex = 0;
+      renderCommandResults(query);
+    }
+
+    function handleCommandKeydown(e) {
+      if (e.key === 'Escape') {
+        closeCommandPalette();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        commandSelectedIndex = Math.min(commandSelectedIndex + 1, commandItems.length - 1);
+        updateCommandSelection();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        commandSelectedIndex = Math.max(commandSelectedIndex - 1, 0);
+        updateCommandSelection();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (commandItems[commandSelectedIndex]) {
+          executeCommand(commandItems[commandSelectedIndex]);
+        }
+      }
+    }
+
+    function renderCommandResults(query) {
+      commandItems = [];
+      
+      // Actions
+      const actions = [
+        { type: 'action', icon: '📋', text: 'Weekly Review', hint: 'W', action: () => { closeCommandPalette(); openReviewModal(); }},
+        { type: 'action', icon: '➕', text: 'Add New System', hint: 'N', action: () => { closeCommandPalette(); openAddSystemModal(); }},
+        { type: 'action', icon: '🔄', text: 'Refresh Data', hint: 'R', action: () => { closeCommandPalette(); loadData(); }},
+        { type: 'action', icon: '⚙️', text: 'Reset Connection', action: () => { closeCommandPalette(); resetConnection(); }},
+        { type: 'action', icon: '★', text: 'Edit North Star', action: () => { closeCommandPalette(); editNorthStar(); }},
+        { type: 'action', icon: '◆', text: 'Add Quarterly Goal', action: () => { closeCommandPalette(); addQuarterlyGoal(); }},
+      ];
+
+      // Filter actions
+      const filteredActions = actions.filter(a => 
+        a.text.toLowerCase().includes(query) || 
+        (a.hint && a.hint.toLowerCase() === query)
+      );
+
+      // Systems
+      const filteredSystems = data.systems.filter(s => 
+        s.Name.toLowerCase().includes(query)
+      ).map(s => ({
+        type: 'system',
+        icon: categoryIcons[s.Category] || '○',
+        text: s.Name,
+        hint: s.Status,
+        action: () => { 
+          closeCommandPalette();
+          expandedSystems.add(s.ID);
+          selectedCategory = 'all';
+          renderFilters();
+          renderSystems();
+          setTimeout(() => {
+            document.querySelector(`.system[data-id="${s.ID}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+      }));
+
+      // Features
+      const filteredFeatures = data.features.filter(f => 
+        f.Name.toLowerCase().includes(query)
+      ).slice(0, 5).map(f => {
+        const system = data.systems.find(s => s.ID === f.SystemID);
+        return {
+          type: 'feature',
+          icon: '·',
+          text: f.Name,
+          hint: system ? system.Name : '',
+          action: () => {
+            closeCommandPalette();
+            if (system) {
+              expandedSystems.add(system.ID);
+              selectedCategory = 'all';
+              renderFilters();
+              renderSystems();
+              setTimeout(() => {
+                document.querySelector(`.system[data-id="${system.ID}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }
+          }
+        };
+      });
+
+      // Build results HTML
+      let html = '';
+
+      if (filteredActions.length > 0) {
+        html += `<div class="command-group-label">Actions</div>`;
+        filteredActions.forEach(item => {
+          commandItems.push(item);
+          html += renderCommandItem(item, commandItems.length - 1);
+        });
+      }
+
+      if (filteredSystems.length > 0) {
+        html += `<div class="command-group-label">Systems</div>`;
+        filteredSystems.forEach(item => {
+          commandItems.push(item);
+          html += renderCommandItem(item, commandItems.length - 1);
+        });
+      }
+
+      if (filteredFeatures.length > 0) {
+        html += `<div class="command-group-label">Features</div>`;
+        filteredFeatures.forEach(item => {
+          commandItems.push(item);
+          html += renderCommandItem(item, commandItems.length - 1);
+        });
+      }
+
+      if (commandItems.length === 0) {
+        html = `<div class="empty-state" style="padding: 24px;"><div class="empty-state-text">No results found</div></div>`;
+      }
+
+      document.getElementById('commandResults').innerHTML = html;
+    }
+
+    function renderCommandItem(item, index) {
+      return `
+        <div class="command-item ${index === commandSelectedIndex ? 'selected' : ''}" onclick="executeCommand(commandItems[${index}])">
+          <span class="command-item-icon">${item.icon}</span>
+          <span class="command-item-text">${item.text}</span>
+          ${item.hint ? `<span class="command-item-hint">${item.hint}</span>` : ''}
+        </div>
+      `;
+    }
+
+    function updateCommandSelection() {
+      document.querySelectorAll('.command-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === commandSelectedIndex);
+      });
+      // Scroll into view
+      document.querySelectorAll('.command-item')[commandSelectedIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    function executeCommand(item) {
+      if (item && item.action) {
+        item.action();
+      }
+    }
 
     // North Star (Phase 4)
     function renderNorthStar() {
